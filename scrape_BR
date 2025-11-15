@@ -1,0 +1,91 @@
+import requests
+from typing import List, Dict
+import json
+
+API_ENDPOINT = "https://api.byrotation.com/trpc/listing.list"
+BASE_DOMAIN = "https://byrotation.com"
+PAGE_SIZE = 36  # as in the API
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                  "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Safari/605.1.15",
+    "Accept": "*/*",
+    "Content-Type": "application/json",
+    "Origin": BASE_DOMAIN,
+    "Referer": BASE_DOMAIN
+}
+
+def extract_hits(data):
+    """Extract hits from ByRotation API whether data is list or dict."""
+    # Case 1: API response is a list (normal for tRPC batch mode)
+    if isinstance(data, list) and len(data) > 0:
+        item = data[0]
+        return (
+            item.get("result", {})
+                .get("data", {})
+                .get("json", {})
+                .get("hits", [])
+        )
+
+    # Case 2: Unexpected single dict
+    return (
+        data.get("result", {})
+            .get("data", {})
+            .get("json", {})
+            .get("hits", [])
+    )
+
+def fetch_products(query: str, skip: int = 0) -> List[Dict]:
+    """Fetch a page of products from ByRotation API."""
+    input_param = {
+        "0": {
+            "json": {
+                "first": PAGE_SIZE,
+                "skip": skip,
+                "query": query,
+                "filters": {}
+            }
+        }
+    }
+    params = {
+        "batch": 1,
+        "input": json.dumps(input_param)
+    }
+    resp = requests.get(API_ENDPOINT, headers=HEADERS, params=params, timeout=20)
+    resp.raise_for_status()
+    data = resp.json()
+    hits = extract_hits(data)
+    return hits
+
+def scrape_all_products(query: str, max_pages: int = 10) -> List[Dict]:
+    """Scrape multiple pages of ByRotation products."""
+    all_products: List[Dict] = []
+    for page in range(max_pages):
+        skip = page * PAGE_SIZE
+        print(f"Fetching page {page+1} (skip={skip})...")
+        hits = fetch_products(query=query, skip=skip)
+        if not hits:
+            break
+        for hit in hits:
+            if hit.get("status") != "ACTIVE":
+                continue  # skip inactive products
+            all_products.append({
+                "title": hit.get("title"),
+                "brand": hit.get("brand"),
+                "retail_price": hit.get("retailPrice"),
+                "rental_price": hit.get("minPrice"),
+                "week_price": hit.get("weekPrice"),
+                "url": f"{BASE_DOMAIN}/products/{hit.get('slug')}",
+                "images": [img.get("url") for img in hit.get("images", [])],
+                "category": hit.get("category"),
+                "size": hit.get("size"),
+                "color": hit.get("color")
+            })
+    return all_products
+
+if __name__ == "__main__":
+    SEARCH_QUERY = "red"
+    products = scrape_all_products(query=SEARCH_QUERY, max_pages=5)
+    print(f"Found {len(products)} products.\n")
+    for item in products:
+        print(item["url"])
