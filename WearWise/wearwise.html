@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WearWise</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #727200;
+      --primary-soft: #a4a95b;
+      --text-main: #222222;
+      --text-muted: #666666;
+      --border-subtle: #e3ddd4;
+    }
+
+    /* Background dress illustration */
+    .bg-dress {
+      position: fixed;   
+      top: 0;
+      left: 0;         
+      width: 100vw;
+      height: 100vh;              /* IMPORTANT: gives the div a visible area */
+      background-image: url("dress3.png");
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.5;              /* soft & subtle */
+      pointer-events: none;       /* doesn't block clicks */
+      z-index: -1;                /* behind everything */
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #fef8ef, #f4eee6);
+      color: var(--text-main);
+      padding: 40px 24px 72px;
+      position: relative;
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 60px;
+    }
+
+    h1 {
+      color: #808000;
+      font-size: 90px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-align: left;
+    }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-top: 12px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .subtext {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .subtext span {
+      background: rgba(255, 255, 255, 0.7);
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid #e3ddd3;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.78rem;
+      display: inline-block;
+    }
+
+    /* Horizontal row with three feature blocks */
+    .info-row {
+      display: flex;
+      justify-content: center;
+      gap: 100px;
+      margin: 40px 0 80px 0;
+      flex-wrap: wrap;
+    }
+
+    .info-item {
+      text-align: center;
+      max-width: 260px;
+    }
+
+    .info-item h3 {
+      font-size: 30px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #222;
+    }
+
+    .info-item p {
+      font-size: 16px;
+      color: #666;
+      line-height: 1.45;
+    }
+
+    /* CTA at the bottom */
+    .cta-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .cta-panel {
+      background: linear-gradient(135deg, #ffffff, #f8f1e3);
+      border-radius: 22px;
+      padding: 22px 22px 18px;
+      border: 1px solid #efe3d3;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.08);
+      max-width: 360px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .cta-heading {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .cta-copy {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .cta-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: radial-gradient(circle at top left, var(--primary), var(--primary-soft));
+      color: #ffffff;
+      border-radius: 999px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 16px 36px rgba(114, 114, 0, 0.4);
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+      text-decoration: none;
+    }
+
+    .cta-box::after {
+      content: "→";
+      font-size: 1.1rem;
+      transform: translateX(0);
+      transition: transform 0.15s ease-out;
+    }
+
+    .cta-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 44px rgba(114, 114, 0, 0.48);
+    }
+
+    .cta-box:hover::after {
+      transform: translateX(2px);
+    }
+
+    .cta-note {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <!-- background dress illustration -->
+  <div class="bg-dress"></div>
+
+  <main class="page">
+    <header>
+      <h1>WEARWISE</h1>
+      <h2>Your AI rental assistant</h2>
+      <p class="subtext">
+        <span>Rent smarter · Dress better</span>
+      </p>
+    </header>
+
+    <!-- Three-column feature row -->
+    <section class="info-row">
+      <div class="info-item">
+        <h3>Any Occasion</h3>
+        <p>Weddings, galas, business events, or date nights</p>
+      </div>
+
+      <div class="info-item">
+        <h3>Anywhere</h3>
+        <p>Top 6 rental companies that deliver across the UK</p>
+      </div>
+
+      <div class="info-item">
+        <h3>Any Style</h3>
+        <p>Matches your style, size, and preferences</p>
+      </div>
+    </section>
+
+    <!-- CTA at the bottom -->
+    <section class="cta-wrapper">
+      <aside class="cta-panel">
+        <p class="cta-heading">So, what's your plans?</p>
+        <p class="cta-copy">
+          Just answer a few questions, and we’ll match you with rental looks that feel like you.
+        </p>
+        <a href="questionaire.html" class="cta-box">
+          Find my perfect outfit
+        </a>
+        <p class="cta-note">
+          No scrolling through endless pages – just curated looks in seconds.
+        </p>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

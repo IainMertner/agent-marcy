@@ -1,5 +1,8 @@
 from graph import graph
 
-initial_state = {"text": "hi"}
+# initial input to graph
+initial_state = {"user_input": "rad and awesome"}
+# run pipeline
 result = graph.invoke(initial_state)
-print(result["response"])
+# print final ranked lists
+print(result["ranked_items"])
