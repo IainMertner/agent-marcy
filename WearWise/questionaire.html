@@ -22,20 +22,21 @@
       --border-subtle: #e3ddd4;
       --radius-card: 24px;
     }
+
     /* Background dress illustration */
     .bg-dress {
-      position: fixed;   
+      position: fixed;
       top: 0;
-      left: 0;         
+      left: 0;
       width: 100vw;
-      height: 100vh;              /* IMPORTANT: gives the div a visible area */
+      height: 100vh;
       background-image: url("dress3.png");
       background-repeat: no-repeat;
       background-size: cover;
       background-position: center;
-      opacity: 0.5;              /* soft & subtle */
-      pointer-events: none;       /* doesn't block clicks */
-      z-index: -1;                /* behind everything */
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: -1;
     }
 
     body {
@@ -227,6 +228,55 @@
     input[type="range"] {
       flex: 1;
     }
+    /* ---- Range slider styling ---- */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      height: 6px;
+      border-radius: 999px;
+      background: #e7ded0;          /* track background */
+      outline: none;
+    }
+
+    /* WebKit (Chrome, Safari) track */
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 999px;
+      background: #e7ded0;
+    }
+
+    /* WebKit thumb */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);   /* olive knob colour */
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+      cursor: pointer;
+      margin-top: -6px;             /* centers thumb on track */
+    }
+
+    /* Firefox track */
+    input[type="range"]::-moz-range-track {
+      height: 6px;
+      border-radius: 999px;
+      background: #e7ded0;
+    }
+
+    /* Firefox thumb */
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
 
     .range-value {
       font-size: 0.85rem;
@@ -243,6 +293,7 @@
       flex-wrap: wrap;
     }
 
+    /* CTA styling – works for <button> or <a> */
     .cta-submit {
       display: inline-flex;
       align-items: center;
@@ -257,6 +308,7 @@
       cursor: pointer;
       box-shadow: 0 16px 36px rgba(114, 114, 0, 0.4);
       transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+      text-decoration: none; /* keep it looking like a button */
     }
 
     .cta-submit::after {
@@ -439,26 +491,19 @@
           </div>
         </div>
 
-        <div class="field-row">
-          <div class="field">
-            <label for="duration">How long do you need it for?</label>
-            <select id="duration" name="duration">
-              <option value="">Select an option</option>
-              <option>1 day / evening</option>
-              <option>3–4 days</option>
-              <option>1 week</option>
-              <option>Longer</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="extras">Do you also need accessories?</label>
-            <select id="extras" name="extras">
-              <option value="">Not sure yet</option>
-              <option>Yes – bags & shoes</option>
-              <option>Yes – jewellery</option>
-              <option>Yes – full look (all of the above)</option>
-              <option>No – just the main outfit</option>
-            </select>
+        <div class="field">
+          <label for="duration">How long do you need it for?</label>
+          <div class="range-row">
+            <input
+              id="duration"
+              name="duration"
+              type="range"
+              min="1"
+              max="28"
+              step="1"
+              value="2"
+            />
+            <div class="range-value" id="durationValue">Around 2 days</div>
           </div>
         </div>
 
@@ -473,12 +518,14 @@
       </div>
 
       <div class="actions">
-        <a href="wearwise.html" class="back-link">← Back to WearWise home
-        </a>
-        <a href="recommendations.html" class="cta-box">
+        <a href="wearwise.html" class="back-link">← Back to WearWise home</a>
+
+        <!-- Styled link as CTA button -->
+        <a href="recommendations.html" class="cta-submit">
           See my recommendations
         </a>
       </div>
+
       <p class="fine-print">
         This is a prototype — your answers are not sent anywhere yet.
       </p>
@@ -490,22 +537,22 @@
     const budgetInput = document.getElementById("budget");
     const budgetValue = document.getElementById("budgetValue");
 
+    const durationInput = document.getElementById("duration");
+    const durationValue = document.getElementById("durationValue"); 
+
     function updateBudgetLabel() {
       budgetValue.textContent = "Around £" + budgetInput.value;
+    }
+    function updateDurationLabel() {
+      const days = durationInput.value;
+      durationValue.textContent = "Around " + days + (days == 1 ? " day" : " days");
     }
 
     budgetInput.addEventListener("input", updateBudgetLabel);
     updateBudgetLabel();
 
-    // Simple demo submit handler
-    document.getElementById("ww-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      alert(
-        "Thanks for filling this in! In a real version, WearWise would now generate curated rental looks for you."
-      );
-    });
+    durationInput.addEventListener("input", updateDurationLabel);
+    updateDurationLabel();
   </script>
 </body>
 </html>
-
-    

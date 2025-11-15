@@ -15,8 +15,8 @@
     :root {
       --primary: #727200;
       --primary-soft: #a4a95b;
-      --text-main: #222222;
-      --text-muted: #666666;
+      --text-main: #222;
+      --text-muted: #666;
       --border-subtle: #e3ddd4;
       --card-bg: #ffffff;
     }
@@ -31,24 +31,24 @@
       position: relative;
     }
 
-    /* same dress wallpaper as questionnaire */
+    /* subtle dress wallpaper */
     .bg-dress {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background-image: url("dress3.png"); /* use your wallpaper file */
-      background-repeat: no-repeat;
+      background-image: url("dress3.png");
       background-size: cover;
+      background-repeat: no-repeat;
       background-position: center;
-      opacity: 0.2;
+      opacity: 0.22;
       pointer-events: none;
       z-index: -1;
     }
 
     .page {
-      max-width: 1120px;
+      max-width: 1150px;
       margin: 0 auto;
     }
 
@@ -57,6 +57,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 28px;
+      flex-wrap: wrap;
       gap: 16px;
     }
 
@@ -64,7 +65,7 @@
       font-weight: 700;
       letter-spacing: 0.14em;
       color: #808000;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       text-transform: uppercase;
     }
 
@@ -87,154 +88,130 @@
     .progress-fill {
       height: 100%;
       width: 100%;
-      border-radius: inherit;
       background: linear-gradient(90deg, var(--primary), var(--primary-soft));
     }
 
-    .hero {
-      margin-bottom: 26px;
-    }
-
     .hero h1 {
-      font-size: 1.8rem;
-      margin-bottom: 6px;
+      font-size: 2rem;
+      margin-bottom: 8px;
     }
 
     .hero p {
-      font-size: 0.95rem;
+      font-size: 1rem;
       color: var(--text-muted);
+      max-width: 800px;
+      line-height: 1.55;
     }
 
-    .sub-note {
-      margin-top: 4px;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    /* ranked list */
     .results-list {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      margin-top: 14px;
+      gap: 18px;
+      margin-top: 22px;
     }
 
+    /* clickable card */
     .result-card {
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 18px;
-      border: 1px solid rgba(239, 227, 211, 0.9);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.06);
-      padding: 16px 18px 14px;
       display: grid;
       grid-template-columns: auto 1fr auto;
       gap: 14px 18px;
       align-items: center;
+
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 20px;
+      border: 1px solid #efe3d3;
+      padding: 18px 20px 16px;
+
+      text-decoration: none;      /* makes link look like a card */
+      color: inherit;
+
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.06);
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    }
+
+    .result-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
     }
 
     .rank {
-      font-size: 1.4rem;
-      font-weight: 600;
+      font-size: 1.5rem;
+      font-weight: 700;
       color: var(--primary);
       min-width: 32px;
       text-align: center;
     }
 
     .result-main h2 {
-      font-size: 1.05rem;
+      font-size: 1.15rem;
       margin-bottom: 4px;
+      font-weight: 600;
     }
 
     .result-meta {
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       color: var(--text-muted);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .tags {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin-top: 4px;
     }
 
     .tag {
       font-size: 0.75rem;
       padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid #e3ddd4;
-      background: rgba(255, 255, 255, 0.8);
+      background: #fff;
+      border: 1px solid var(--border-subtle);
+      white-space: nowrap;
     }
 
     .score-pill {
-      padding: 6px 10px;
+      background: #f3eddc;
+      padding: 7px 12px;
       border-radius: 999px;
-      background: #f2ecdb;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
+      white-space: nowrap;
       color: #4f4a2a;
     }
 
-    .actions-row {
-      margin-top: 18px;
+    .actions {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+      margin-top: 30px;
     }
 
-    .primary-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 20px;
+    .back-home {
+      padding: 12px 22px;
       border-radius: 999px;
-      border: none;
       background: radial-gradient(circle at top left, var(--primary), var(--primary-soft));
       color: white;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 14px 26px rgba(114, 114, 0, 0.4);
       text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 14px 26px rgba(114,114,0,0.4);
     }
 
-    .primary-btn::after {
+    .back-home::after {
       content: "→";
       margin-left: 6px;
-      font-size: 1rem;
-    }
-
-    .back-link {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      text-decoration: none;
-    }
-
-    .back-link:hover {
-      text-decoration: underline;
-    }
-
-    @media (max-width: 640px) {
-      .result-card {
-        grid-template-columns: auto 1fr;
-        grid-template-rows: auto auto;
-      }
-
-      .score-pill {
-        justify-self: flex-start;
-      }
     }
   </style>
 </head>
 <body>
+
   <div class="bg-dress"></div>
 
   <main class="page">
+
+    <!-- Header -->
     <header>
-      <div>
-        <div class="brand">WearWise</div>
-      </div>
+      <div class="brand">WearWise</div>
+
       <div>
         <div class="section-label">Recommendations</div>
         <div class="progress-bar">
@@ -243,27 +220,39 @@
       </div>
     </header>
 
+    <!-- Intro -->
     <section class="hero">
       <h1>Your curated rental looks</h1>
       <p>
         Based on your answers, these options should fit your occasion, vibe, and budget.
-        Here’s a ranked shortlist so you don’t have to scroll through endless pages.
+        Here’s a ranked shortlist so you don't have to scroll through endless pages.
       </p>
-      <p class="sub-note">
-        This is a prototype – these example results are static. In a real version, they’d be generated from live inventory.
+      <p style="margin-top:8px; font-size:0.85rem; color:var(--text-muted);">
+        This is a prototype — these example results are static. In a real version, these
+        would be pulled automatically from live rental inventory.
       </p>
     </section>
 
+    <!-- RESULTS -->
     <section class="results-list">
 
-      <article class="result-card">
+      <!-- CARD 1 -->
+      <a class="result-card"
+         href="https://example.com/olive-satin-column-gown"
+         target="_blank"
+         rel="noopener noreferrer">
+
         <div class="rank">1</div>
+
         <div class="result-main">
           <h2>Olive Satin Column Gown</h2>
-          <div class="result-meta">Perfect for: evening weddings · black-tie-ish events</div>
-          <p class="result-meta">
-            Floor-length satin with subtle drape and long sleeves – great if you mentioned feeling elevated but comfortable.
-          </p>
+          <div class="result-meta">
+            Perfect for: evening weddings · black-tie-ish events
+          </div>
+          <div class="result-meta">
+            Floor-length satin with subtle drape + long sleeves — great if you wanted elevated but comfortable.
+          </div>
+
           <div class="tags">
             <span class="tag">Occasion: Wedding / Gala</span>
             <span class="tag">Vibe: Elevated · Romantic</span>
@@ -271,35 +260,51 @@
             <span class="tag">Budget: Mid</span>
           </div>
         </div>
-        <div class="score-pill">Best match</div>
-      </article>
 
-      <article class="result-card">
+        <div class="score-pill">Best match</div>
+      </a>
+
+      <!-- CARD 2 -->
+      <a class="result-card"
+         href="https://example.com/cream-tailored-midi-dress"
+         target="_blank"
+         rel="noopener noreferrer">
+
         <div class="rank">2</div>
+
         <div class="result-main">
           <h2>Cream Tailored Midi Dress</h2>
           <div class="result-meta">Perfect for: work events · smart dinners</div>
-          <p class="result-meta">
-            Clean, minimal silhouette with a structured waist and long sleeves. Works well if you prefer neutrals or a minimal vibe.
-          </p>
+          <div class="result-meta">
+            Minimal, structured silhouette with a long-sleeve clean finish — ideal if you prefer neutrals.
+          </div>
+
           <div class="tags">
             <span class="tag">Occasion: Work / Smart casual</span>
             <span class="tag">Vibe: Minimal · Elevated</span>
-            <span class="tag">Sleeve length: long</span>
+            <span class="tag">Sleeve length: Long</span>
             <span class="tag">Budget: ££</span>
           </div>
         </div>
-        <div class="score-pill">Strong fit</div>
-      </article>
 
-      <article class="result-card">
+        <div class="score-pill">Strong fit</div>
+      </a>
+
+      <!-- CARD 3 -->
+      <a class="result-card"
+         href="https://example.com/soft-blush-wrap-dress"
+         target="_blank"
+         rel="noopener noreferrer">
+
         <div class="rank">3</div>
+
         <div class="result-main">
           <h2>Soft Blush Wrap Dress</h2>
           <div class="result-meta">Perfect for: daytime weddings · date nights</div>
-          <p class="result-meta">
-            Adjustable wrap waist and fluid skirt – good if you mentioned comfort, movement, or fluctuating sizes.
-          </p>
+          <div class="result-meta">
+            Adjustable wrap waist + fluid skirt — great for movement, comfort, or fluctuating sizes.
+          </div>
+
           <div class="tags">
             <span class="tag">Occasion: Daytime / Semi-formal</span>
             <span class="tag">Vibe: Romantic · Comfortable</span>
@@ -307,34 +312,43 @@
             <span class="tag">Budget: £</span>
           </div>
         </div>
-        <div class="score-pill">Great alternative</div>
-      </article>
 
-      <article class="result-card">
+        <div class="score-pill">Great alternative</div>
+      </a>
+
+      <!-- CARD 4 -->
+      <a class="result-card"
+         href="https://example.com/black-square-neck-jumpsuit"
+         target="_blank"
+         rel="noopener noreferrer">
+
         <div class="rank">4</div>
+
         <div class="result-main">
           <h2>Black Square-Neck Jumpsuit</h2>
           <div class="result-meta">Perfect for: parties · city nights</div>
-          <p class="result-meta">
-            Modern alternative to a dress – easy to style with statement jewellery and heels if you chose a bolder vibe.
-          </p>
+          <div class="result-meta">
+            Modern alternative to a dress — easy to style with bold jewellery for a confident look.
+          </div>
+
           <div class="tags">
             <span class="tag">Occasion: Party</span>
             <span class="tag">Vibe: Bold · Trend-led</span>
             <span class="tag">Petite & tall-friendly</span>
           </div>
         </div>
+
         <div class="score-pill">Option to switch it up</div>
-      </article>
+      </a>
 
     </section>
 
-    <div class="actions-row">
-      <a href="questionnaire.html" class="back-link">← Edit my answers</a>
-      <a href="wearwise.html" class="primary-btn">
-            Back to WearWise home
-      </a>
+    <!-- Back Button -->
+    <div class="actions">
+      <a href="wearwise.html" class="back-home">Back to WearWise home</a>
     </div>
+
   </main>
+
 </body>
 </html>
