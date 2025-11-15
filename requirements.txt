@@ -1,2 +1,4 @@
 langgraph
 openai
+requests
+bs4
