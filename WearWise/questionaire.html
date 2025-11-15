@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WearWise • Outfit Questionnaire</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f5f1ed;
+      --primary: #727200;
+      --primary-soft: #a4a95b;
+      --text-main: #222222;
+      --text-muted: #666666;
+      --card-bg: #ffffff;
+      --border-subtle: #e3ddd4;
+      --radius-card: 24px;
+    }
+    /* Background dress illustration */
+    .bg-dress {
+      position: fixed;   
+      top: 0;
+      left: 0;         
+      width: 100vw;
+      height: 100vh;              /* IMPORTANT: gives the div a visible area */
+      background-image: url("dress3.png");
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.5;              /* soft & subtle */
+      pointer-events: none;       /* doesn't block clicks */
+      z-index: -1;                /* behind everything */
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #fef8ef, #f4eee6);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 32px 16px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 780px;
+      background: var(--card-bg);
+      border-radius: var(--radius-card);
+      border: 1px solid #efe3d3;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.1);
+      padding: 26px 22px 24px;
+    }
+
+    @media (min-width: 768px) {
+      .shell {
+        padding: 30px 34px 30px;
+      }
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: #808000;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+    }
+
+    .step-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+    }
+
+    .progress {
+      margin-top: 4px;
+      width: 150px;
+      height: 6px;
+      border-radius: 999px;
+      background: #f1e5d6;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 60%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), var(--primary-soft));
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 4px;
+    }
+
+    .intro {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .section {
+      padding: 14px 0 4px;
+      border-top: 1px solid #f1e4d6;
+    }
+
+    .field-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 18px;
+      margin-top: 10px;
+    }
+
+    .field {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--text-main);
+      background: #fdfaf7;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease,
+        background 0.15s ease;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary-soft);
+      box-shadow: 0 0 0 2px rgba(164, 169, 91, 0.2);
+      background: #ffffff;
+    }
+
+    .choices {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      padding: 7px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: #fcf7ee;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, border-color 0.15s ease,
+        box-shadow 0.15s ease, transform 0.1s ease;
+    }
+
+    .pill input {
+      accent-color: var(--primary);
+    }
+
+    .pill:hover {
+      background: #f8f1e5;
+      border-color: #e1d3c0;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    .range-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    input[type="range"] {
+      flex: 1;
+    }
+
+    .range-value {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      min-width: 80px;
+    }
+
+    .actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .cta-submit {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 22px;
+      background: radial-gradient(circle at top left, var(--primary), var(--primary-soft));
+      color: #ffffff;
+      border-radius: 999px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 16px 36px rgba(114, 114, 0, 0.4);
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    }
+
+    .cta-submit::after {
+      content: "→";
+      font-size: 1.1rem;
+      margin-left: 6px;
+      transition: transform 0.15s ease-out;
+    }
+
+    .cta-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 44px rgba(114, 114, 0, 0.48);
+    }
+
+    .cta-submit:hover::after {
+      transform: translateX(2px);
+    }
+
+    .back-link {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .fine-print {
+      margin-top: 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-dress"></div>
+  <div class="shell">
+    <div class="top-row">
+      <div>
+        <div class="brand">WearWise</div>
+      </div>
+      <div>
+        <div class="step-label">Questionnaire</div>
+        <div class="progress">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <h1>Tell us about your plans</h1>
+    <p class="intro">
+      Answer a few quick questions and we’ll curate rental looks tailored to your event, style, and budget.
+    </p>
+
+    <form id="ww-form">
+      <!-- Section 1 -->
+      <div class="section">
+        <div class="section-title">Event details</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="eventType">What are you dressing for?</label>
+            <select id="eventType" name="eventType" required>
+              <option value="">Select an event</option>
+              <option>Wedding guest</option>
+              <option>Black tie / gala</option>
+              <option>Birthday / celebration</option>
+              <option>Work event</option>
+              <option>Holiday / vacation</option>
+              <option>Casual day / brunch</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="eventDate">When is it?</label>
+            <input id="eventDate" name="eventDate" type="date" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="location">Where will you be wearing it? (city or climate)</label>
+            <input id="location" name="location" type="text" placeholder="e.g. London, warm indoor venue" />
+          </div>
+          <div class="field">
+            <label for="dressCode">Dress code (if you know it)</label>
+            <input id="dressCode" name="dressCode" type="text" placeholder="e.g. cocktail, smart casual" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2 -->
+      <div class="section">
+        <div class="section-title">Your style & fit</div>
+
+        <div class="field">
+          <label>How would you like to feel?</label>
+          <div class="choices">
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="elevated" />
+              Elevated
+            </label>
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="minimal" />
+              Minimal
+            </label>
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="romantic" />
+              Romantic
+            </label>
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="bold" />
+              Bold
+            </label>
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="comfortable" />
+              Comfortable
+            </label>
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="trend-led" />
+              Trend-led
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Colours you love (or want to avoid)</label>
+          <div class="field-row">
+            <div class="field">
+              <input
+                type="text"
+                name="coloursLove"
+                placeholder="Colours you love (e.g. jewel tones, neutrals)"
+              />
+            </div>
+            <div class="field">
+              <input
+                type="text"
+                name="coloursAvoid"
+                placeholder="Colours to avoid (e.g. red, bright orange)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="size">Your usual dress size</label>
+            <input id="size" name="size" type="text" placeholder="e.g. UK 10 / M" />
+          </div>
+          <div class="field">
+            <label for="fitNotes">Anything we should know about fit?</label>
+            <input
+              id="fitNotes"
+              name="fitNotes"
+              type="text"
+              placeholder="e.g. petite, tall, bigger bust, prefer long sleeves"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3 -->
+      <div class="section">
+        <div class="section-title">Budget & extras</div>
+
+        <div class="field">
+          <label for="budget">Rough budget for the outfit (rental)</label>
+          <div class="range-row">
+            <input
+              id="budget"
+              name="budget"
+              type="range"
+              min="30"
+              max="300"
+              step="10"
+              value="80"
+            />
+            <div class="range-value" id="budgetValue">Around £80</div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="duration">How long do you need it for?</label>
+            <select id="duration" name="duration">
+              <option value="">Select an option</option>
+              <option>1 day / evening</option>
+              <option>3–4 days</option>
+              <option>1 week</option>
+              <option>Longer</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="extras">Do you also need accessories?</label>
+            <select id="extras" name="extras">
+              <option value="">Not sure yet</option>
+              <option>Yes – bags & shoes</option>
+              <option>Yes – jewellery</option>
+              <option>Yes – full look (all of the above)</option>
+              <option>No – just the main outfit</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="notes">Anything else you’d like WearWise to know?</label>
+          <textarea
+            id="notes"
+            name="notes"
+            placeholder="Share any specific pieces you love, insecurities you’re dressing around, or inspiration."
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="wearwise.html" class="back-link">← Back to WearWise home
+        </a>
+        <a href="recommendations.html" class="cta-box">
+          See my recommendations
+        </a>
+      </div>
+      <p class="fine-print">
+        This is a prototype — your answers are not sent anywhere yet.
+      </p>
+    </form>
+  </div>
+
+  <script>
+    // Update budget label dynamically
+    const budgetInput = document.getElementById("budget");
+    const budgetValue = document.getElementById("budgetValue");
+
+    function updateBudgetLabel() {
+      budgetValue.textContent = "Around £" + budgetInput.value;
+    }
+
+    budgetInput.addEventListener("input", updateBudgetLabel);
+    updateBudgetLabel();
+
+    // Simple demo submit handler
+    document.getElementById("ww-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      alert(
+        "Thanks for filling this in! In a real version, WearWise would now generate curated rental looks for you."
+      );
+    });
+  </script>
+</body>
+</html>
+
+    
