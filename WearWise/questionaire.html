@@ -24,18 +24,18 @@
     }
     /* Background dress illustration */
     .bg-dress {
-      position: fixed;   
+      position: fixed;
       top: 0;
-      left: 0;         
+      left: 0;
       width: 100vw;
-      height: 100vh;              /* IMPORTANT: gives the div a visible area */
+      height: 100vh;
       background-image: url("dress3.png");
       background-repeat: no-repeat;
       background-size: cover;
       background-position: center;
-      opacity: 0.5;              /* soft & subtle */
-      pointer-events: none;       /* doesn't block clicks */
-      z-index: -1;                /* behind everything */
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: -1;
     }
 
     body {
@@ -290,6 +290,42 @@
       font-size: 0.75rem;
       color: var(--text-muted);
     }
+
+    /* Results + status */
+    #status {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .results {
+      margin-top: 18px;
+    }
+
+    .item-card {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: #faf7f0;
+    }
+
+    .item-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .item-meta {
+      font-size: 0.8rem;
+      color: #555;
+      margin-bottom: 3px;
+    }
+
+    .item-link a {
+      font-size: 0.8rem;
+      color: #727200;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
@@ -473,20 +509,22 @@
       </div>
 
       <div class="actions">
-        <a href="wearwise.html" class="back-link">← Back to WearWise home
-        </a>
-        <a href="recommendations.html" class="cta-box">
+        <a href="wearwise.html" class="back-link">← Back to WearWise home</a>
+        <button type="submit" class="cta-submit">
           See my recommendations
-        </a>
+        </button>
       </div>
       <p class="fine-print">
-        This is a prototype — your answers are not sent anywhere yet.
+        This is a prototype — WearWise will generate suggestions based on your answers.
       </p>
+
+      <div id="status"></div>
+      <section class="results" id="results"></section>
     </form>
   </div>
 
   <script>
-    // Update budget label dynamically
+    // Budget label
     const budgetInput = document.getElementById("budget");
     const budgetValue = document.getElementById("budgetValue");
 
@@ -497,15 +535,97 @@
     budgetInput.addEventListener("input", updateBudgetLabel);
     updateBudgetLabel();
 
-    // Simple demo submit handler
-    document.getElementById("ww-form").addEventListener("submit", function (e) {
+    const form = document.getElementById("ww-form");
+    const statusEl = document.getElementById("status");
+    const resultsEl = document.getElementById("results");
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      alert(
-        "Thanks for filling this in! In a real version, WearWise would now generate curated rental looks for you."
-      );
+
+      statusEl.textContent = "WearWise is finding rental looks for you...";
+      resultsEl.innerHTML = "";
+
+      const formData = new FormData(form);
+
+      const eventType = formData.get("eventType") || "";
+      const eventDate = formData.get("eventDate") || "";
+      const location = formData.get("location") || "";
+      const dressCode = formData.get("dressCode") || "";
+      const size = formData.get("size") || "";
+      const fitNotes = formData.get("fitNotes") || "";
+      const coloursLove = formData.get("coloursLove") || "";
+      const coloursAvoid = formData.get("coloursAvoid") || "";
+      const duration = formData.get("duration") || "";
+      const extras = formData.get("extras") || "";
+      const notes = formData.get("notes") || "";
+      const vibes = formData.getAll("vibe") || [];
+      const budgetVal = formData.get("budget") || "";
+
+      // Build a single natural language description for the backend agent
+      const userDescription = `
+Event: ${eventType}
+Date: ${eventDate}
+Location: ${location}
+Dress code: ${dressCode}
+Vibes: ${vibes.join(", ")}
+Colours you love: ${coloursLove}
+Colours to avoid: ${coloursAvoid}
+Size: ${size}
+Fit notes: ${fitNotes}
+Budget: around £${budgetVal}
+Duration: ${duration}
+Accessories: ${extras}
+Extra notes: ${notes}
+`.trim();
+
+      try {
+        const response = await fetch("/api/recommend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_input: userDescription }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Server error: " + response.status);
+        }
+
+        const data = await response.json();
+        const items = data.ranked_items || [];
+
+        if (items.length === 0) {
+          statusEl.textContent = "No items found yet. Try adjusting your answers.";
+          return;
+        }
+
+        statusEl.textContent = `Found ${items.length} items. Showing top matches:`;
+        resultsEl.innerHTML = "";
+
+        items.forEach((item) => {
+          const card = document.createElement("div");
+          card.className = "item-card";
+
+          const priceText =
+            item.price !== null && item.price !== undefined
+              ? "£" + item.price
+              : "Price unknown";
+
+          card.innerHTML = `
+            <div class="item-title">${item.title || "Untitled item"}</div>
+            <div class="item-meta">
+              ${priceText} · ${item.delivery || "Delivery: unknown"}
+            </div>
+            <div class="item-link">
+              ${item.url ? `<a href="${item.url}" target="_blank">View on rental site</a>` : ""}
+            </div>
+          `;
+
+          resultsEl.appendChild(card);
+        });
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "Something went wrong talking to WearWise's agent.";
+      }
     });
   </script>
 </body>
 </html>
-
-    
