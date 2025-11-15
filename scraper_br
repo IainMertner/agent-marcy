@@ -75,7 +75,7 @@ def scrape_all_products(query: str, max_pages: int = 10) -> List[Dict]:
                 "retail_price": hit.get("retailPrice"),
                 "rental_price": hit.get("minPrice"),
                 "week_price": hit.get("weekPrice"),
-                "url": f"{BASE_DOMAIN}/search/{hit.get('slug')}",
+                "url": f"{BASE_DOMAIN}/products/{hit.get('slug')}",
                 "images": [img.get("url") for img in hit.get("images", [])],
                 "category": hit.get("category"),
                 "size": hit.get("size"),
