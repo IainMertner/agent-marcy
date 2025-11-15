@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WearWise • Your recommendations</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #727200;
+      --primary-soft: #a4a95b;
+      --text-main: #222222;
+      --text-muted: #666666;
+      --border-subtle: #e3ddd4;
+      --card-bg: #ffffff;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #fef8ef, #f4eee6);
+      color: var(--text-main);
+      padding: 40px 24px 72px;
+      position: relative;
+    }
+
+    /* same dress wallpaper as questionnaire */
+    .bg-dress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url("dress3.png"); /* use your wallpaper file */
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.2;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      gap: 16px;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: #808000;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+    }
+
+    .section-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .progress-bar {
+      margin-top: 6px;
+      width: 170px;
+      height: 6px;
+      border-radius: 999px;
+      background: #f1e5d6;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), var(--primary-soft));
+    }
+
+    .hero {
+      margin-bottom: 26px;
+    }
+
+    .hero h1 {
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+    }
+
+    .hero p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .sub-note {
+      margin-top: 4px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ranked list */
+    .results-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .result-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 18px;
+      border: 1px solid rgba(239, 227, 211, 0.9);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.06);
+      padding: 16px 18px 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px 18px;
+      align-items: center;
+    }
+
+    .rank {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 32px;
+      text-align: center;
+    }
+
+    .result-main h2 {
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+    }
+
+    .result-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #e3ddd4;
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .score-pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f2ecdb;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #4f4a2a;
+    }
+
+    .actions-row {
+      margin-top: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .primary-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border-radius: 999px;
+      border: none;
+      background: radial-gradient(circle at top left, var(--primary), var(--primary-soft));
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 14px 26px rgba(114, 114, 0, 0.4);
+      text-decoration: none;
+    }
+
+    .primary-btn::after {
+      content: "→";
+      margin-left: 6px;
+      font-size: 1rem;
+    }
+
+    .back-link {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      .result-card {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto;
+      }
+
+      .score-pill {
+        justify-self: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-dress"></div>
+
+  <main class="page">
+    <header>
+      <div>
+        <div class="brand">WearWise</div>
+      </div>
+      <div>
+        <div class="section-label">Recommendations</div>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h1>Your curated rental looks</h1>
+      <p>
+        Based on your answers, these options should fit your occasion, vibe, and budget.
+        Here’s a ranked shortlist so you don’t have to scroll through endless pages.
+      </p>
+      <p class="sub-note">
+        This is a prototype – these example results are static. In a real version, they’d be generated from live inventory.
+      </p>
+    </section>
+
+    <section class="results-list">
+
+      <article class="result-card">
+        <div class="rank">1</div>
+        <div class="result-main">
+          <h2>Olive Satin Column Gown</h2>
+          <div class="result-meta">Perfect for: evening weddings · black-tie-ish events</div>
+          <p class="result-meta">
+            Floor-length satin with subtle drape and long sleeves – great if you mentioned feeling elevated but comfortable.
+          </p>
+          <div class="tags">
+            <span class="tag">Occasion: Wedding / Gala</span>
+            <span class="tag">Vibe: Elevated · Romantic</span>
+            <span class="tag">Body-friendly: tummy & arms</span>
+            <span class="tag">Budget: Mid</span>
+          </div>
+        </div>
+        <div class="score-pill">Best match</div>
+      </article>
+
+      <article class="result-card">
+        <div class="rank">2</div>
+        <div class="result-main">
+          <h2>Cream Tailored Midi Dress</h2>
+          <div class="result-meta">Perfect for: work events · smart dinners</div>
+          <p class="result-meta">
+            Clean, minimal silhouette with a structured waist and long sleeves. Works well if you prefer neutrals or a minimal vibe.
+          </p>
+          <div class="tags">
+            <span class="tag">Occasion: Work / Smart casual</span>
+            <span class="tag">Vibe: Minimal · Elevated</span>
+            <span class="tag">Sleeve length: long</span>
+            <span class="tag">Budget: ££</span>
+          </div>
+        </div>
+        <div class="score-pill">Strong fit</div>
+      </article>
+
+      <article class="result-card">
+        <div class="rank">3</div>
+        <div class="result-main">
+          <h2>Soft Blush Wrap Dress</h2>
+          <div class="result-meta">Perfect for: daytime weddings · date nights</div>
+          <p class="result-meta">
+            Adjustable wrap waist and fluid skirt – good if you mentioned comfort, movement, or fluctuating sizes.
+          </p>
+          <div class="tags">
+            <span class="tag">Occasion: Daytime / Semi-formal</span>
+            <span class="tag">Vibe: Romantic · Comfortable</span>
+            <span class="tag">Bust-friendly</span>
+            <span class="tag">Budget: £</span>
+          </div>
+        </div>
+        <div class="score-pill">Great alternative</div>
+      </article>
+
+      <article class="result-card">
+        <div class="rank">4</div>
+        <div class="result-main">
+          <h2>Black Square-Neck Jumpsuit</h2>
+          <div class="result-meta">Perfect for: parties · city nights</div>
+          <p class="result-meta">
+            Modern alternative to a dress – easy to style with statement jewellery and heels if you chose a bolder vibe.
+          </p>
+          <div class="tags">
+            <span class="tag">Occasion: Party</span>
+            <span class="tag">Vibe: Bold · Trend-led</span>
+            <span class="tag">Petite & tall-friendly</span>
+          </div>
+        </div>
+        <div class="score-pill">Option to switch it up</div>
+      </article>
+
+    </section>
+
+    <div class="actions-row">
+      <a href="questionnaire.html" class="back-link">← Edit my answers</a>
+      <a href="wearwise.html" class="primary-btn">
+            Back to WearWise home
+      </a>
+    </div>
+  </main>
+</body>
+</html>
