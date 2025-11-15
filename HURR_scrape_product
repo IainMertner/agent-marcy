@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+"""
+scrape_hurr_single_with_sizes.py
+
+Scrape a single HURR listing by URL and extract available sizes.
+"""
+
+import requests
+
+API_URL = "https://hurr-eu.ent.eu-west-2.aws.cloud.es.io/api/as/v1/engines/search-production-hurr-listings-v4/multi_search.json"
+BEARER_TOKEN = "search-kms28ixa6p378p4d4fvm53r3"
+
+HEADERS = {
+    "Authorization": f"Bearer {BEARER_TOKEN}",
+    "Content-Type": "application/json",
+    "Accept": "*/*",
+}
+
+def fetch_hurr_by_slug(slug):
+    payload = {
+        "queries": [
+            {
+                "query": slug,
+                "page": {"current": 1, "size": 1}
+            }
+        ]
+    }
+
+    response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=15)
+    response.raise_for_status()
+    return response.json()
+
+
+def scrape_single_hurr(url):
+    if "/listings/" not in url:
+        print("✗ Invalid HURR listing URL")
+        return {}
+
+    slug = url.split("/listings/")[-1].strip("/")
+    print(f"Scraping HURR listing: {url}")
+    print(f"Slug: {slug}\n")
+
+    data = fetch_hurr_by_slug(slug)
+    results = data[0].get("results", [])
+
+    if not results:
+        print("No results found for this slug.")
+        return {}
+
+    raw = results[0]
+
+    title = raw["item_name"]["raw"]
+    brand = raw["designer_brand"]["raw"]
+    public_uid = raw["public_uid"]["raw"]
+    img = raw.get("cl_image_url", {}).get("raw")
+
+    # --- Extract sizes ---
+    sizes = []
+
+    # First, check available_sizes
+    if "available_sizes" in raw and "raw" in raw["available_sizes"]:
+        sizes = raw["available_sizes"]["raw"]
+
+    # Some listings may store sizes in variants
+    elif "variants" in raw:
+        for variant in raw["variants"]:
+            size = variant.get("size", None)
+            if size and size not in sizes:
+                sizes.append(size)
+
+    result = {
+        "platform": "HURR",
+        "url": url,
+        "title": title,
+        "brand": brand,
+        "public_uid": public_uid,
+        "image": img,
+        "sizes": sizes,
+        "slug": slug
+    }
+
+    print("Scraped data:")
+    for k, v in result.items():
+        print(f"{k}: {v}")
+
+    return result
+
+
+if __name__ == "__main__":
+    test_url = "https://www.hurrcollective.com/listings/cherry-mesh-dorris-skirt"
+    scrape_single_hurr(test_url)

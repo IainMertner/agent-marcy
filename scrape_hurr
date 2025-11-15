@@ -1,0 +1,98 @@
+import requests
+import json
+
+API_URL = "https://hurr-eu.ent.eu-west-2.aws.cloud.es.io/api/as/v1/engines/search-production-hurr-listings-v4/multi_search.json"
+BEARER_TOKEN = "search-kms28ixa6p378p4d4fvm53r3"
+
+HEADERS = {
+    "Authorization": f"Bearer {BEARER_TOKEN}",
+    "Content-Type": "application/json",
+    "Accept": "*/*",
+}
+
+def fetch_hurr(query="red", page=1, size=100):
+    """Fetch results from HURR's public ElasticSearch API."""
+    payload = {
+        "queries": [
+            {
+                "query": query,
+                "page": {"current": page, "size": size}
+            }
+        ]
+    }
+
+    try:
+        r = requests.post(API_URL, headers=HEADERS, json=payload, timeout=15)
+        r.raise_for_status()
+        return r.json()
+    except Exception as e:
+        print("API Error:", e)
+        return None
+
+
+def correct_hurr_url(slug: str) -> str:
+    """Return the REAL, WORKING HURR listing URL."""
+    return f"https://www.hurrcollective.com/listings/{slug}"
+
+
+def scrape_hurr(query="red dress", max_pages=3):
+    print(f"\nSearching HURR for: {query}\n")
+
+    all_products = []
+
+    for page in range(1, max_pages + 1):
+        data = fetch_hurr(query, page=page)
+
+        if not data:
+            print("No API data returned.")
+            break
+
+        results = data[0].get("results", [])
+
+        if not results:
+            print("No more results.")
+            break
+
+        print(f"Page {page}: {len(results)} items found")
+
+        for item in results:
+            raw = item
+
+            slug = raw.get("slug", {}).get("raw", "")
+            title = raw.get("item_name", {}).get("raw", "N/A")
+            brand = raw.get("designer_brand", {}).get("raw", "N/A")
+            img = raw.get("cl_image_url", {}).get("raw")
+            sizes = raw.get("available_sizes", {}).get("raw")
+
+            # URL FIXED HERE
+            url = correct_hurr_url(slug)
+
+            product = {
+                "platform": "HURR",
+                "title": title,
+                "brand": brand,
+                "slug": slug,
+                "url": url,
+                "image": img,
+                "sizes": sizes,
+            }
+
+            all_products.append(product)
+            print(f"  → {url}")
+
+    return all_products
+
+
+if __name__ == "__main__":
+    PRODUCTS = scrape_hurr("red dress", max_pages=2)
+
+    print("\n===== SUMMARY =====")
+    print(f"Total products: {len(PRODUCTS)}")
+
+    for p in PRODUCTS[:5]:  # show first 5
+        print(p["url"])
+
+    with open("hurr_products.json", "w") as f:
+        json.dump(PRODUCTS, f, indent=2)
+
+
