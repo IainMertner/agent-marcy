@@ -1,0 +1,72 @@
+from __future__ import annotations
+import requests
+from typing import List, Dict
+
+BASE_DOMAIN = "https://www.mywardrobehq.com"
+API_ENDPOINT = f"{BASE_DOMAIN}/get-products"
+
+# Replace this with your current mwhqsession cookie from Safari
+MW_SESSION_COOKIE = "mwhqsession=9s4huvja3jes9pj02dn4iik1c8847oaj"
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                  "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Safari/605.1.15",
+    "Accept": "*/*",
+    "X-Requested-With": "XMLHttpRequest",
+    "Cookie": f"mwhqsession={MW_SESSION_COOKIE};"
+}
+
+def fetch_products_page(query: str, page: int = 0) -> List[Dict]:
+    """Fetch a single page of products from MyWardrobeHQ API."""
+    params = {
+        "featured": "1",
+        "selected_page": "search",
+        "sort": "date_desc",
+        "q": query,
+        "type": "json",
+        "page": page
+    }
+    resp = requests.get(API_ENDPOINT, headers=HEADERS, params=params, timeout=15)
+    resp.raise_for_status()
+    data = resp.json()
+    if not isinstance(data, list):
+        return []
+    return data
+
+def build_product_url(product: dict) -> str:
+    """Build working product URL from API data."""
+    brand_slug = product.get("brandName", "").lower().replace(" ", "-")
+    product_slug = product.get("slug", "").lower().replace(" ", "-")
+    product_id = product.get("id")
+    return f"{BASE_DOMAIN}/{brand_slug}/{product_slug}/P{product_id}"
+
+def scrape_all_product_urls(query: str, max_pages: int = 50) -> List[str]:
+    """Fetch all working product URLs for a given search term."""
+    urls: List[str] = []
+    for page in range(max_pages):
+        print(f"Fetching page {page}...")
+        try:
+            products = fetch_products_page(query=query, page=page)
+        except Exception as e:
+            print(f"Error fetching page {page}: {e}")
+            break
+
+        if not products:  # No more products
+            break
+
+        for product in products:
+            if product.get("overallStatus", "").upper() == "SOLD":
+                continue  # Skip sold items
+            url = build_product_url(product)
+            urls.append(url)
+
+    return urls
+
+if __name__ == "__main__":
+    SEARCH_QUERY = "red"  # Change your search term here
+    print(f"Scraping MyWardrobeHQ for query: '{SEARCH_QUERY}'\n")
+
+    product_urls = scrape_all_product_urls(SEARCH_QUERY)
+    print(f"\nFound {len(product_urls)} working product URLs:\n")
+    for url in product_urls:
+        print(url)

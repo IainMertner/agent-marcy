@@ -1,0 +1,256 @@
+import requests
+from bs4 import BeautifulSoup
+import json
+import re
+import time
+
+def scrape_single_mwhq(url: str) -> dict:
+    print("="*60)
+    print(f"Scraping: {url}")
+    print("="*60)
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-GB,en;q=0.9"
+    }
+    
+    try:
+        response = requests.get(url, headers=headers, timeout=15)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        
+        # -------------------------
+        # TITLE from meta og:title or <title>
+        # -------------------------
+        title = None
+        og_title = soup.find("meta", property="og:title")
+        if og_title:
+            title_full = og_title.get("content", "")
+            # Remove " | MY WARDROBE HQ" and "Rent Buy" prefix
+            title = title_full.replace("| MY WARDROBE HQ", "").replace("Rent Buy", "").strip()
+        
+        if not title:
+            title_tag = soup.find("title")
+            if title_tag:
+                title = title_tag.get_text().replace("| MY WARDROBE HQ", "").replace("Rent Buy", "").strip()
+        
+        # -------------------------
+        # DESIGNER - Extract from title (format: "DESIGNER Product Name")
+        # -------------------------
+        designer = None
+        if title:
+            # Designer is typically the first part before the product name
+            parts = title.split()
+            # Look for all-caps words at the start (designer names)
+            designer_parts = []
+            for part in parts:
+                if part.isupper() and len(part) > 1:
+                    designer_parts.append(part)
+                else:
+                    break
+            if designer_parts:
+                designer = " ".join(designer_parts)
+        
+        # -------------------------
+        # IMAGE from meta og:image
+        # -------------------------
+        image = None
+        og_image = soup.find("meta", property="og:image")
+        if og_image:
+            image = og_image.get("content")
+            # Convert to full size if it's a thumb
+            if image and 'thumb_' in image:
+                image = image.replace('thumb_', '')
+        
+        # -------------------------
+        # DESCRIPTION from meta og:description
+        # -------------------------
+        description = None
+        og_desc = soup.find("meta", property="og:description")
+        if og_desc:
+            description = og_desc.get("content", "").strip()
+        
+        if not description:
+            desc_meta = soup.find("meta", attrs={"name": "description"})
+            if desc_meta:
+                description = desc_meta.get("content", "").strip()
+        
+        # -------------------------
+        # PRICES - Look in page text and script tags
+        # -------------------------
+        page_text = soup.get_text()
+        
+        # Sale price (current price)
+        sale_price = None
+        sale_matches = re.findall(r'(?:SALE|BUY NOW)[:\s]*£([\d,]+)', page_text, re.IGNORECASE)
+        if sale_matches:
+            sale_price = int(sale_matches[0].replace(',', ''))
+        
+        # Retail price (RRP)
+        retail_price = None
+        rrp_matches = re.findall(r'RRP[:\s]*£([\d,]+)', page_text, re.IGNORECASE)
+        if rrp_matches:
+            retail_price = int(rrp_matches[0].replace(',', ''))
+        
+        # Rent/Hire price
+        hire_price = None
+        rent_matches = re.findall(r'(?:Rent|Rental|Hire)[:\s]*(?:from[:\s]*)?£([\d,]+)', page_text, re.IGNORECASE)
+        if rent_matches:
+            hire_price = int(rent_matches[0].replace(',', ''))
+        
+        # -------------------------
+        # SIZES - Look for select, buttons, or in page data
+        # -------------------------
+        sizes = []
+        
+        # Method 1: Look in select dropdowns
+        selects = soup.find_all("select")
+        for select in selects:
+            select_name = str(select.get('name', '')).lower()
+            select_id = str(select.get('id', '')).lower()
+            
+            if 'size' in select_name or 'size' in select_id or 'variant' in select_name:
+                options = select.find_all("option")
+                for opt in options:
+                    opt_text = opt.get_text(strip=True)
+                    opt_value = opt.get('value', '')
+                    
+                    if opt_text and opt_text.lower() not in ['select', 'select size', 'please select', '']:
+                        if opt_text not in sizes:
+                            sizes.append(opt_text)
+        
+        # Method 2: Look in script tags for product data
+        scripts = soup.find_all("script")
+        for script in scripts:
+            if script.string and 'size' in script.string.lower():
+                # Look for size patterns like "UK 6", "UK 8", etc
+                size_matches = re.findall(r'UK\s*(\d+)', script.string, re.IGNORECASE)
+                for size in size_matches:
+                    size_str = f"UK {size}"
+                    if size_str not in sizes:
+                        sizes.append(size_str)
+        
+        # Method 3: Look for size buttons/divs
+        size_elements = soup.find_all(['button', 'div', 'span'], class_=lambda x: x and 'size' in str(x).lower())
+        for elem in size_elements:
+            size_text = elem.get_text(strip=True)
+            if size_text and len(size_text) < 15 and size_text not in sizes:
+                # Check if it looks like a size
+                if re.match(r'^(UK\s*)?\d+$', size_text) or size_text.upper() in ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL']:
+                    sizes.append(size_text)
+        
+        # -------------------------
+        # MATERIAL & SIZING INFO
+        # -------------------------
+        material_info = ""
+        sizing_info = ""
+        
+        # Look in divs that might contain this info
+        for div in soup.find_all(['div', 'section', 'article']):
+            div_text = div.get_text("\n", strip=True)
+            
+            if len(div_text) > 20:  # Substantial content
+                if any(word in div_text.lower() for word in ['material', 'fabric', 'composition', 'cotton', 'polyester']):
+                    if len(div_text) < 500:  # Not too long
+                        material_info = div_text
+                
+                if any(word in div_text.lower() for word in ['model', 'height', 'wearing', 'size guide']):
+                    if len(div_text) < 500:
+                        sizing_info = div_text
+        
+        # -------------------------
+        # RESULT
+        # -------------------------
+        result = {
+            "platform": "MyWardrobeHQ",
+            "url": url,
+            "title": title or "N/A",
+            "designer": designer or "N/A",
+            "description": description or "",
+            "material_info": material_info,
+            "sizing_info": sizing_info,
+            "sizes": sizes,
+            "sale_price": sale_price,
+            "hire_price": hire_price,
+            "retail_price": retail_price,
+            "image": image
+        }
+        
+        print("\n✓ Successfully extracted:")
+        print(f"Title: {result['title']}")
+        print(f"Designer: {result['designer']}")
+        print(f"Sale Price: £{result['sale_price']}" if result['sale_price'] else "Sale Price: N/A")
+        print(f"Hire Price: £{result['hire_price']}" if result['hire_price'] else "Hire Price: N/A")
+        print(f"Retail Price: £{result['retail_price']}" if result['retail_price'] else "Retail Price: N/A")
+        print(f"Sizes: {', '.join(result['sizes'])}" if result['sizes'] else "Sizes: Not found")
+        print(f"Image: {result['image'][:60]}..." if result['image'] else "Image: N/A")
+        
+        return result
+        
+    except Exception as e:
+        print(f"✗ Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return {}
+
+
+def scrape_multiple_mwhq(urls):
+    """Scrape multiple MyWardrobeHQ URLs."""
+    results = []
+    total = len(urls)
+    
+    print("\n" + "="*60)
+    print(f"Scraping {total} items from MyWardrobeHQ")
+    print("="*60 + "\n")
+    
+    for idx, url in enumerate(urls, 1):
+        print(f"\n[{idx}/{total}]")
+        result = scrape_single_mwhq(url)
+        if result:
+            results.append(result)
+        print("\n" + "-"*60)
+        
+        # Be nice to the server
+        time.sleep(1)
+    
+    return results
+
+
+# Example usage
+if __name__ == "__main__":
+    # Your URLs here
+    urls = [
+        "https://www.mywardrobehq.com/ports-1961/ribbon-henley-dress/P15988",
+        # Add more URLs here
+    ]
+    
+    dresses = scrape_multiple_mwhq(urls)
+    
+    # Print summary
+    print("\n" + "="*60)
+    print(f"COMPLETE: Successfully scraped {len(dresses)} items")
+    print("="*60)
+    
+    # Save to JSON
+    if dresses:
+        output_file = 'mywardrobehq_dresses.json'
+        try:
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(dresses, f, indent=2, ensure_ascii=False)
+            print(f"\n✓ Data saved to {output_file}")
+            
+            # Print all results
+            print("\nDETAILED RESULTS:")
+            print("="*60)
+            for dress in dresses:
+                print(f"\nTitle: {dress['title']}")
+                print(f"Designer: {dress['designer']}")
+                print(f"Sale: £{dress['sale_price']}" if dress['sale_price'] else "")
+                print(f"Retail: £{dress['retail_price']}" if dress['retail_price'] else "")
+                print(f"Sizes: {', '.join(dress['sizes'])}" if dress['sizes'] else "Sizes: N/A")
+                print(f"URL: {dress['url']}")
+                print("-"*60)
+                
+        except Exception as e:
+            print(f"\n✗ Could not save file: {e}")
