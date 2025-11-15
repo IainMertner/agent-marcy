@@ -3,7 +3,7 @@ import os
 
 from flask import Flask, request, jsonify, send_from_directory
 
-from graph import graph  # ⬅️ only import graph here
+from graph import graph  
 
 app = Flask(__name__)
 
@@ -34,14 +34,14 @@ def recommend():
     print(">>> Received from frontend:\n", user_input)
     print(">>> Calling graph.invoke(...)")
 
-    # 🔸 Use dict state, just like in main.py
+    
     initial_state: Dict[str, Any] = {"user_input": user_input}
     final_state = graph.invoke(initial_state)
 
-    # Debug: see exactly what the graph returned
+    
     print(">>> Full final_state:", final_state, type(final_state))
 
-    # Safely pull ranked_items out of the dict
+ 
     ranked_items: List[Dict[str, Any]] = final_state.get("ranked_items") or []
     top_k = 10
 
