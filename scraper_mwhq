@@ -11,7 +11,7 @@ MW_SESSION_COOKIE = "mwhqsession=9s4huvja3jes9pj02dn4iik1c8847oaj"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                   "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Safari/605.1.15",
-    "Accept": "*/*",
+    "Accept": "/",
     "X-Requested-With": "XMLHttpRequest",
     "Cookie": f"mwhqsession={MW_SESSION_COOKIE};"
 }
@@ -33,42 +33,40 @@ def fetch_products_page(query: str, page: int = 0) -> List[Dict]:
         return []
     return data
 
-def scrape_all_products(query: str, max_pages: int = 50) -> List[Dict]:
-    """Scrape multiple pages for a given query."""
-    all_products: List[Dict] = []
+def build_product_url(product: dict) -> str:
+    """Build working product URL from API data."""
+    brand_slug = product.get("brandName", "").lower().replace(" ", "-")
+    product_slug = product.get("slug", "").lower().replace(" ", "-")
+    product_id = product.get("id")
+    return f"{BASE_DOMAIN}/{brand_slug}/{product_slug}/P{product_id}"
+
+def scrape_all_product_urls(query: str, max_pages: int = 50) -> List[str]:
+    """Fetch all working product URLs for a given search term."""
+    urls: List[str] = []
     for page in range(max_pages):
         print(f"Fetching page {page}...")
-        products = fetch_products_page(query=query, page=page)
+        try:
+            products = fetch_products_page(query=query, page=page)
+        except Exception as e:
+            print(f"Error fetching page {page}: {e}")
+            break
+
         if not products:  # No more products
             break
 
         for product in products:
             if product.get("overallStatus", "").upper() == "SOLD":
                 continue  # Skip sold items
+            url = build_product_url(product)
+            urls.append(url)
 
-            all_products.append({
-                "title": product.get("title") or product.get("name"),
-                "rental_price": float(product.get("rentalPrice", 0)),
-                "retail_price": product.get("retailPrice"),
-                "sale_price": product.get("salePrice"),
-                "url": f"{BASE_DOMAIN}/product/{product.get('slug')}",
-                "image": product.get("image"),
-                "brand": product.get("brandName"),
-                "category": product.get("categoryName"),
-                "for_rent": product.get("forRent") == "1",
-                "for_sale": product.get("forSale") == "1",
-            })
-
-    return all_products
+    return urls
 
 if __name__ == "__main__":
     SEARCH_QUERY = "red"  # Change your search term here
-    print(f"Scraping MyWardrobeHQ for query: '{SEARCH_QUERY}'")
-    try:
-        products = scrape_all_products(query=SEARCH_QUERY)
-    except Exception as e:
-        print("Error while scraping:", e)
-    else:
-        print(f"Found {len(products)} available items.\n")
-        for item in products:
-            print(item["url"])
+    print(f"Scraping MyWardrobeHQ for query: '{SEARCH_QUERY}'\n")
+
+    product_urls = scrape_all_product_urls(SEARCH_QUERY)
+    print(f"\nFound {len(product_urls)} working product URLs:\n")
+    for url in product_urls:
+        print(url)
