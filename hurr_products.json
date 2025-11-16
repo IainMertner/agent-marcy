@@ -613,21 +613,21 @@
   },
   {
     "platform": "HURR",
-    "title": "Full length Gown ",
-    "brand": "Solace London",
-    "slug": "full-length-gown",
-    "url": "https://www.hurrcollective.com/listings/full-length-gown",
-    "image": "https://res.cloudinary.com/dcaptnlz3/image/upload/c_fill,f_webp,h_634,q_auto:best,w_424/6l5eumgzrgz0b6gcwzj5kpnuks1m",
-    "sizes": "UK 10"
-  },
-  {
-    "platform": "HURR",
     "title": "Isabella Dress",
     "brand": "Rat & Boa",
     "slug": "isabella-dress-97698",
     "url": "https://www.hurrcollective.com/listings/isabella-dress-97698",
     "image": "https://res.cloudinary.com/dcaptnlz3/image/upload/c_crop,h_1273,w_849,x_0,y_0/c_fill,f_webp,h_634,q_auto:best,w_424/u1ev3jrueeq5sskfqm01b60od9fu",
     "sizes": "UK 4"
+  },
+  {
+    "platform": "HURR",
+    "title": "Full length Gown ",
+    "brand": "Solace London",
+    "slug": "full-length-gown",
+    "url": "https://www.hurrcollective.com/listings/full-length-gown",
+    "image": "https://res.cloudinary.com/dcaptnlz3/image/upload/c_fill,f_webp,h_634,q_auto:best,w_424/6l5eumgzrgz0b6gcwzj5kpnuks1m",
+    "sizes": "UK 10"
   },
   {
     "platform": "HURR",
@@ -1405,21 +1405,21 @@
   },
   {
     "platform": "HURR",
-    "title": "Laurel Dress",
-    "brand": "Elliatt",
-    "slug": "laurel-dress-1792",
-    "url": "https://www.hurrcollective.com/listings/laurel-dress-1792",
-    "image": "https://res.cloudinary.com/dcaptnlz3/image/upload/c_fill,f_webp,h_634,q_auto:best,w_424/0g8oy6qveri9riwy2t3q634gn6e3",
-    "sizes": "UK 8"
-  },
-  {
-    "platform": "HURR",
     "title": "Olympia Maxi Dress",
     "brand": "De La Vali",
     "slug": "olympia-maxi-dress-74163",
     "url": "https://www.hurrcollective.com/listings/olympia-maxi-dress-74163",
     "image": "https://res.cloudinary.com/dcaptnlz3/image/upload/c_fill,f_webp,h_634,q_auto:best,w_424/wli6s2cy0qoimuismj8n299cu3b8",
     "sizes": "UK 12"
+  },
+  {
+    "platform": "HURR",
+    "title": "Laurel Dress",
+    "brand": "Elliatt",
+    "slug": "laurel-dress-1792",
+    "url": "https://www.hurrcollective.com/listings/laurel-dress-1792",
+    "image": "https://res.cloudinary.com/dcaptnlz3/image/upload/c_fill,f_webp,h_634,q_auto:best,w_424/0g8oy6qveri9riwy2t3q634gn6e3",
+    "sizes": "UK 8"
   },
   {
     "platform": "HURR",
@@ -1540,21 +1540,21 @@
   },
   {
     "platform": "HURR",
-    "title": "Mel Dress",
-    "brand": "RIXO",
-    "slug": "mel-dress-62452",
-    "url": "https://www.hurrcollective.com/listings/mel-dress-62452",
-    "image": "https://res.cloudinary.com/dcaptnlz3/image/upload/c_crop,h_561,w_374,x_-6,y_69/c_fill,f_webp,h_634,q_auto:best,w_424/fy5pkhnsy0yow3uavcl2wvl65voc",
-    "sizes": "UK 12"
-  },
-  {
-    "platform": "HURR",
     "title": "LYDIA RED DRESS",
     "brand": "Nadine Merabi",
     "slug": "lydia-red-dress",
     "url": "https://www.hurrcollective.com/listings/lydia-red-dress",
     "image": "https://res.cloudinary.com/dcaptnlz3/image/upload/c_crop,h_907,w_604,x_90,y_155/c_fill,f_webp,h_634,q_auto:best,w_424/tdopa3zsvm7l380c82tboe19q3hv",
     "sizes": "UK 8, UK 10"
+  },
+  {
+    "platform": "HURR",
+    "title": "Mel Dress",
+    "brand": "RIXO",
+    "slug": "mel-dress-62452",
+    "url": "https://www.hurrcollective.com/listings/mel-dress-62452",
+    "image": "https://res.cloudinary.com/dcaptnlz3/image/upload/c_crop,h_561,w_374,x_-6,y_69/c_fill,f_webp,h_634,q_auto:best,w_424/fy5pkhnsy0yow3uavcl2wvl65voc",
+    "sizes": "UK 12"
   },
   {
     "platform": "HURR",
