@@ -6,7 +6,7 @@ from sites import gmd_1, br_1, hs_1, hurr_1, mwhq_1
 
 SITE_MODULES = {
     "gmd_1": gmd_1,
-    #"br_1": br_1,
+    "br_1": br_1,
     #"hs_1": hs_1,
     #"hurr_1": hurr_1,
     #"mwhq_1": mwhq_1
@@ -38,15 +38,20 @@ def get_sites_step(state: dict):
         "mwhq" # mywardrobehq
         ]}
 
-## find list of relevant item urls from sites (dummy code)
+## find list of item urls from all sites
 def find_item_urls_step(state: dict):
     item_urls = []
+
+    ## iterate over each site
     for site in state.sites:
+        # find site's corresponding scraper
         module_1 = SITE_MODULES.get(site + "_1")
         if module_1 is None:
             print(f"No model found for site: {site}")
-            continue
-        site_item_urls = module_1.get_item_urls(state.user_input)
+            continue # no scraper module found
+
+        # call site's scraper function with user input
+        site_item_urls = module_1.get_item_urls(state.parsed_input)
         item_urls.extend(site_item_urls)
 
     return {"item_urls": item_urls}
