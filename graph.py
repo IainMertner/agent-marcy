@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 from langgraph.graph import StateGraph, START, END
 from parse_input import parse_input
+from get_sites import get_sites
 from rank_items import rank_items
 from sites import gmd_1, gmd_2, br_1, br_2, hs_1, hs_2, hurr_1, hurr_2, mwhq_1, mwhq_2
 
@@ -38,13 +39,8 @@ def parse_input_step(state: AgentState):
 
 ## get list of sites to search
 def get_sites_step(state: dict):
-    return {"sites": [
-        "gmd", # girlmeetsdress
-        "br", # byrotation
-        "hs", # hirestreet
-        "hurr", # hurr
-        "mwhq" # mywardrobehq
-        ]}
+    sites = get_sites(state.user_input)
+    return {"sites": sites}
 
 ## find list of item urls from all sites
 def find_item_urls_step(state: dict):
