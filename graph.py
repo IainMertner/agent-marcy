@@ -2,14 +2,20 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 from langgraph.graph import StateGraph, START, END
 from rank_items import rank_items
-from sites import gmd_1, br_1, hs_1, hurr_1, mwhq_1
+from sites import gmd_1, gmd_2, br_1, br_2, hs_1, hs_2, hurr_1, hurr_2, mwhq_1, mwhq_2
 
+# initialise scraper modules for each site
 SITE_MODULES = {
     "gmd_1": gmd_1,
+    "gmd_2": gmd_2,
     "br_1": br_1,
+    "br_2": br_2,
     "hs_1": hs_1,
+    "hs_2": hs_2, # does not work
     "hurr_1": hurr_1,
-    "mwhq_1": mwhq_1
+    "hurr_2": hurr_2,
+    "mwhq_1": mwhq_1,
+    "mwhq_2": mwhq_2
 }
 
 # define the shared state for the pipeline
@@ -18,7 +24,7 @@ class AgentState:
     user_input: Optional[str] = None
     parsed_input: Optional[str] = None
     sites: List[str] = field(default_factory=list)
-    item_urls: List[str] = field(default_factory=list)
+    item_urls: List[Dict[str,str]] = field(default_factory=list)
     items: List[Dict[str, Any]] = field(default_factory=list)
     ranked_items: List[Dict[str, Any]] = field(default_factory=list)
 
@@ -51,18 +57,29 @@ def find_item_urls_step(state: dict):
             continue # no scraper module found
 
         # call site's scraper function with user input
-        site_item_urls = module_1.get_item_urls(state.parsed_input)
-        item_urls.extend(site_item_urls)
+        urls = module_1.get_item_urls(state.parsed_input)
+
+        for url in urls:
+            item_urls.append({"site": site, "url": url})
 
     return {"item_urls": item_urls}
 
 ## get individual item details from urls (dummy code)
 def get_item_details_step(state: dict):
     items = []
+
+    # iterate over each item url
     for item_url in state.item_urls:
-        items.append({"url": item_url, "title": "Red Silk Dress", "price": 45, "delivery": "Next Day", "description": "cool"})
-        items.append({"url": item_url, "title": "Black Suit", "price": 55, "delivery": "2-3 Days", "description": "awesome"})
-        items.append({"url": item_url, "title": "Gold Gown", "price": 70, "delivery": "Next Day", "description": "rad"})
+        site = item_url.get("site")
+        module_2 = SITE_MODULES.get(site + "_2")
+        if module_2 is None:
+            print(f"No model found for site: {site}")
+            continue # no scraper module found
+
+        # call site's item scraper function
+        item = module_2.get_details(item_url.get("url"))
+        items.append(item)
+
     return {"items": items}
 
 ## score and rank items

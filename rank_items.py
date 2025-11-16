@@ -5,7 +5,10 @@ def simple_similarity_score(user_query: str, description: str) -> float:
     # set of words in user query
     q_words = set(user_query.lower().split())
     # set of words in item description
-    d_words = set(description.lower().split())
+    try:
+        d_words = set(description.lower().split())
+    except:
+        return 0.0
 
     if not q_words:
         return 0.0
