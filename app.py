@@ -1,3 +1,5 @@
+# app.py
+
 from typing import Any, Dict, List
 import os
 
@@ -12,10 +14,33 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "WearWise")
 
 
+# ---------- FRONTEND PAGES ----------
+
+@app.get("/")
+def serve_home():
+    """
+    Landing page: WearWise home.
+    """
+    return send_from_directory(TEMPLATE_DIR, "wearwise.html")
+
+
+@app.get("/wearwise.html")
+def serve_home_explicit():
+    """
+    Explicit /wearwise.html route (for direct links).
+    """
+    return send_from_directory(TEMPLATE_DIR, "wearwise.html")
+
+
 @app.get("/questionaire.html")
 def serve_questionnaire():
+    """
+    Questionnaire page – loaded after clicking the CTA on the home page.
+    """
     return send_from_directory(TEMPLATE_DIR, "questionaire.html")
 
+
+# ---------- STATIC ASSETS ----------
 
 @app.get("/dress3.png")
 def dress_image():
@@ -27,10 +52,12 @@ def favicon():
     return send_from_directory(TEMPLATE_DIR, "favicon.png")
 
 
+# ---------- BACKEND API ----------
+
 @app.post("/api/recommend")
 def recommend():
-    data = request.get_json(force=True) or {}
-    user_input = data.get("user_input", "")
+    data: Dict[str, Any] = request.get_json(force=True) or {}
+    user_input: str = data.get("user_input", "")
 
     print(">>> Received from frontend:\n", user_input)
     print(">>> Calling graph.invoke(...)")
@@ -41,7 +68,7 @@ def recommend():
 
     print(">>> Full final_state:", final_state, type(final_state))
 
-    #Take items from graph output
+    # Take items from graph output
     items: List[Dict[str, Any]] = (
         final_state.get("ranked_items")
         or final_state.get("items")
@@ -56,7 +83,7 @@ def recommend():
             "trace": [],
         })
 
-    # Run explainable ranking agent
+    # Run explainable ranking agent (rule engine + Smart Score LLM)
     agent_result = agent_rank_with_llm(user_input, items)
 
     ranked_items = agent_result["ranked_items"]
@@ -76,7 +103,6 @@ def recommend():
 
 
 if __name__ == "__main__":
+    # Website home:        http://127.0.0.1:8005/
+    # Questionnaire page:  http://127.0.0.1:8005/questionaire.html
     app.run(host="0.0.0.0", port=8005, debug=True)
-
-
-# Website url: http://127.0.0.1:8005/questionaire.html
