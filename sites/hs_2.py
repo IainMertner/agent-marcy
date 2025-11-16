@@ -1,49 +1,85 @@
 import requests
-from bs4 import BeautifulSoup
 import json
-import re
+
+API_URL = "https://www.hirestreetuk.com/api/2025-01/graphql.json"
+HEADERS = {
+    "Content-Type": "application/json",
+    "Accept": "application/graphql-response+json, application/json",
+    "x-shopify-storefront-access-token": "abbba5e66dc038ed6b2291353aedccf5",
+    "User-Agent": "Mozilla/5.0"
+}
 
 def get_details(url):
-    headers = {"User-Agent": "Mozilla/5.0"}
-    r = requests.get(url, headers=headers)
-    if r.status_code != 200:
-        print(f"✗ Failed to fetch page: {r.status_code}")
-        return {}
-
-    # Extract the JSON inside window.__INITIAL_STATE__
-    match = re.search(r'window\.__INITIAL_STATE__\s*=\s*({.*});', r.text)
-    if not match:
-        print("✗ Could not find __INITIAL_STATE__ JSON in page")
-        return {}
+    # Extract handle
+    handle = url.split("/products/")[-1].split("?")[0]
     
-    data = json.loads(match.group(1))
-    
-    # Navigate to product details
-    try:
-        product_data = next(iter(data['listings'].values()))
-    except (KeyError, StopIteration):
-        print("✗ Could not find product data in JSON")
-        return {}
-
-    title = product_data.get('name')
-    brand = product_data.get('designer_brand')
-    description = product_data.get('description')
-    images = product_data.get('images', [])
-    sizes = product_data.get('available_sizes', [])
-    rental_prices = product_data.get('rental_price', {})
-    daily_rate = product_data.get('daily_rate')
-    retail_price = product_data.get('rrp')
-
-    product = {
-        "url": url,
-        "title": title,
-        "brand": brand,
-        "description": description,
-        "rental_prices": rental_prices,
-        "daily_rate": daily_rate,
-        "retail_price": retail_price,
-        "sizes": sizes,
-        "images": images
+    query = """
+    query getProduct($handle: String!) {
+      product(handle: $handle) {
+        title
+        vendor
+        description
+        images(first: 20) { nodes { url } }
+        productType
+        priceRange {
+          minVariantPrice { amount currencyCode }
+        }
+        compareAtPriceRange {
+          minVariantPrice { amount currencyCode }
+        }
+        variants(first: 250) {
+          edges {
+            node {
+              selectedOptions { name value }
+              price { amount currencyCode }
+            }
+          }
+        }
+      }
     }
-    
-    return product
+    """
+
+    payload = {"query": query, "variables": {"handle": handle}}
+
+    try:
+        r = requests.post(API_URL, headers=HEADERS, json=payload)
+        r.raise_for_status()
+        data = r.json()
+
+        product = data["data"]["product"]
+        if not product:
+            return {}
+
+        # Extract sizes (from variant option "Size")
+        sizes = []
+        for edge in product["variants"]["edges"]:
+            opts = edge["node"]["selectedOptions"]
+            for o in opts:
+                if o["name"].lower() == "size":
+                    sizes.append(o["value"])
+
+        return {
+            "url": url,
+            "title": product["title"],
+            "brand": product["vendor"],
+            "description": product["description"],
+            "rental_prices": {
+                "amount": float(product["priceRange"]["minVariantPrice"]["amount"]),
+                "currency": product["priceRange"]["minVariantPrice"]["currencyCode"]
+            },
+            "daily_rate": None,  # API does not expose daily rate
+            "retail_price": (
+                {
+                    "amount": float(product["compareAtPriceRange"]["minVariantPrice"]["amount"]),
+                    "currency": product["compareAtPriceRange"]["minVariantPrice"]["currencyCode"]
+                }
+                if product.get("compareAtPriceRange") and product["compareAtPriceRange"]["minVariantPrice"]
+                else None
+            ),
+            "sizes": sorted(list(set(sizes))),
+            "images": [img["url"] for img in product["images"]["nodes"]],
+        }
+
+    except Exception as e:
+        print("Error:", e)
+        return {}
