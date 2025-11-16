@@ -1,8 +1,9 @@
 from graph import graph
 
 # initial input to graph
-initial_state = {"user_input": "rad and awesome"}
+initial_state = {"user_input": "red"}
 # run pipeline
 result = graph.invoke(initial_state)
 # print final ranked lists
-print(result["ranked_items"])
+for item in enumerate(result["ranked_items"]):
+    print(item)

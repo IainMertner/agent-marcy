@@ -1,12 +1,22 @@
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 from langgraph.graph import StateGraph, START, END
-from rank_items import simple_similarity_score, score_item, rank_items
+from rank_items import rank_items
+from sites import gmd_1, br_1, hs_1, hurr_1, mwhq_1
+
+SITE_MODULES = {
+    "gmd_1": gmd_1,
+    #"br_1": br_1,
+    #"hs_1": hs_1,
+    #"hurr_1": hurr_1,
+    #"mwhq_1": mwhq_1
+}
 
 # define the shared state for the pipeline
 @dataclass
 class AgentState:
     user_input: Optional[str] = None
+    parsed_input: Optional[str] = None
     sites: List[str] = field(default_factory=list)
     item_urls: List[str] = field(default_factory=list)
     items: List[Dict[str, Any]] = field(default_factory=list)
@@ -16,18 +26,29 @@ class AgentState:
 
 ## parse user input (dummy code)
 def parse_input_step(state: AgentState):
-    return {"parsed_input": {"query": state.user_input}}
+    return {"parsed_input": state.user_input}
 
-## get list of sites to search (dummy code)
+## get list of sites to search
 def get_sites_step(state: dict):
-    return {"sites": ["siteA.com", "siteB.com"]}
+    return {"sites": [
+        "gmd", # girlmeetsdress
+        "br", # byrotation
+        "hs", # hirestreet
+        "hurr", # hurr
+        "mwhq" # mywardrobehq
+        ]}
 
 ## find list of relevant item urls from sites (dummy code)
 def find_item_urls_step(state: dict):
     item_urls = []
     for site in state.sites:
-        for i in range(3):
-            item_urls.append(site + str(i))
+        module_1 = SITE_MODULES.get(site + "_1")
+        if module_1 is None:
+            print(f"No model found for site: {site}")
+            continue
+        site_item_urls = module_1.get_item_urls(state.user_input)
+        item_urls.extend(site_item_urls)
+
     return {"item_urls": item_urls}
 
 ## get individual item details from urls (dummy code)
