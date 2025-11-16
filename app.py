@@ -1,5 +1,3 @@
-#app.py
-
 from typing import Any, Dict, List
 import os
 

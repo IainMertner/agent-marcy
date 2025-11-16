@@ -45,7 +45,7 @@ def get_sites_step(state: dict):
 ## find list of item urls from all sites
 def find_item_urls_step(state: dict):
     item_urls = []
-    max_per_site = 3
+    max_per_site = 5
 
     ## iterate over each site
     for site in state.sites:
