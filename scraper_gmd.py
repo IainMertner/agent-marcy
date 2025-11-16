@@ -112,3 +112,4 @@ if __name__ == "__main__":
         print(f"Found {len(dresses)} items.\n")
         for item in dresses:
             print(item["url"])
+

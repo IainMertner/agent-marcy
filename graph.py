@@ -1,6 +1,5 @@
 from langgraph.graph import StateGraph, START, END
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Union
+from parse_input import parse_input
 from rank_items import rank_items
 from sites import gmd_1, gmd_2, br_1, br_2, hs_1, hs_2, hurr_1, hurr_2, mwhq_1, mwhq_2
 from langchain_core.tracers import ConsoleCallbackHandler
@@ -33,14 +32,20 @@ class AgentState:
     ranked_items: List[Dict[str, Any]] = field(default_factory=list)
 
 
+## parse user input (convert into a search term)
 def parse_input_step(state: AgentState):
-    return {"parsed_input": state.user_input}
+    parsed_input = parse_input(state.user_input)
+    return {"parsed_input": parsed_input}
 
-
-def get_sites_step(state: AgentState):
-    return {
-        "sites": ["gmd", "br", "hs", "hurr", "mwhq"]
-    }
+## get list of sites to search
+def get_sites_step(state: dict):
+    return {"sites": [
+        "gmd", # girlmeetsdress
+        "br", # byrotation
+        "hs", # hirestreet
+        "hurr", # hurr
+        "mwhq" # mywardrobehq
+        ]}
 
 
 def find_item_urls_step(state: AgentState):
