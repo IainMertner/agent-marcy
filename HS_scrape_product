@@ -1,62 +1,56 @@
 import requests
 from bs4 import BeautifulSoup
+import json
+import re
 
-def scrape_hirestreet_product(url):
-    handle = url.split('/products/')[1].split('?')[0]
-    api_url = f"https://www.hirestreetuk.com/products/{handle}.json"
-    
-    r = requests.get(api_url, headers={"User-Agent": "Mozilla/5.0"})
+def scrape_hurr_listing(url):
+    headers = {"User-Agent": "Mozilla/5.0"}
+    r = requests.get(url, headers=headers)
     if r.status_code != 200:
-        print("Failed to fetch product JSON")
+        print(f"✗ Failed to fetch page: {r.status_code}")
+        return {}
+
+    # Extract the JSON inside window.__INITIAL_STATE__
+    match = re.search(r'window\.__INITIAL_STATE__\s*=\s*({.*});', r.text)
+    if not match:
+        print("✗ Could not find __INITIAL_STATE__ JSON in page")
         return {}
     
-    data = r.json().get("product", {})
-    if not data:
-        return {}
+    data = json.loads(match.group(1))
     
-    # Extract basic info
+    # Navigate to product details
+    try:
+        product_data = next(iter(data['listings'].values()))
+    except (KeyError, StopIteration):
+        print("✗ Could not find product data in JSON")
+        return {}
+
+    title = product_data.get('name')
+    brand = product_data.get('designer_brand')
+    description = product_data.get('description')
+    images = product_data.get('images', [])
+    sizes = product_data.get('available_sizes', [])
+    rental_prices = product_data.get('rental_price', {})
+    daily_rate = product_data.get('daily_rate')
+    retail_price = product_data.get('rrp')
+
     product = {
-        "title": data.get("title"),
-        "designer": data.get("vendor"),
-        "description": BeautifulSoup(data.get("body_html", ""), "html.parser").get_text(strip=True),
-        "images": [img["src"] for img in data.get("images", [])],
-        "sizes": [],
-        "colors": [],
-        "hire_prices": [],
-        "retail_price": None
+        "url": url,
+        "title": title,
+        "brand": brand,
+        "description": description,
+        "rental_prices": rental_prices,
+        "daily_rate": daily_rate,
+        "retail_price": retail_price,
+        "sizes": sizes,
+        "images": images
     }
-    
-    options = data.get("options", [])
-    variants = data.get("variants", [])
-    
-    for variant in variants:
-        for i, option in enumerate(options):
-            name = option.get("name", "").lower()
-            value = variant.get(f"option{i+1}")
-            if not value:
-                continue
-            if "size" in name and value not in product["sizes"]:
-                product["sizes"].append(value)
-            elif "color" in name or "colour" in name:
-                if value not in product["colors"]:
-                    product["colors"].append(value)
-            elif "duration" in name or "rental" in name or "period" in name:
-                product["hire_prices"].append({"duration": value, "price": float(variant.get("price", 0))})
-    
-    # Fallback hire price if none found
-    if not product["hire_prices"] and variants:
-        product["hire_prices"].append({"duration": "standard", "price": float(variants[0].get("price", 0))})
-    
-    # Retail price
-    if variants:
-        compare = variants[0].get("compare_at_price")
-        if compare:
-            product["retail_price"] = float(compare)
     
     return product
 
 # Example usage
-url = "https://www.hirestreetuk.com/products/simply-be-joanna-red-print-maxi-dress?_pos=1&_sid=08ac1f0f6&_ss=r"
-p = scrape_hirestreet_product(url)
+url = "https://www.hurrcollective.com/listings/cecelia-dress-8860"
+product = scrape_hurr_listing(url)
 import json
-print(json.dumps(p, indent=2))
+print(json.dumps(product, indent=2))
+
