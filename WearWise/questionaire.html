@@ -993,10 +993,7 @@ Extra notes: ${notes}
               <summary style="font-size:0.8rem;cursor:pointer;">See how we scored this (debug)</summary>
               <div style="font-size:0.75rem;margin-top:4px;">
                 <strong>Rule engine scores</strong><br>
-                Price score: ${Number(priceScore).toFixed(1)}<br>
-                Delivery score: ${Number(deliveryScore).toFixed(1)}<br>
                 Similarity score: ${Number(similarityScore).toFixed(1)}<br>
-                Total score: ${Number(totalScore).toFixed(1)} (max 6.0)<br><br>
                 <strong>Smart score</strong><br>
                 LLM match score: ${
                   llmScore !== null ? llmScore.toFixed(0) + "/100" : "n/a"
