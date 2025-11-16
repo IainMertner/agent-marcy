@@ -22,7 +22,7 @@ response = requests.post(
         "api_token": API_TOKEN,
         "model": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
         "messages": [
-            {"role": "user", "content": "My name is Iain"}
+            {"role": "user", "content": "My name is Professor"}
         ],
         "max_tokens": 512
     }

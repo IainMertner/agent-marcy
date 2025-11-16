@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WearWise • Outfit Questionnaire</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f5f1ed;
+      --primary: #727200;
+      --primary-soft: #a4a95b;
+      --text-main: #222222;
+      --text-muted: #666666;
+      --card-bg: #ffffff;
+      --border-subtle: #e3ddd4;
+      --radius-card: 24px;
+    }
+
+    /* Background dress illustration */
+    .bg-dress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url("dress3.png");
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #fef8ef, #f4eee6);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 32px 16px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 780px;
+      background: var(--card-bg);
+      border-radius: var(--radius-card);
+      border: 1px solid #efe3d3;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.1);
+      padding: 26px 22px 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (min-width: 768px) {
+      .shell {
+        padding: 30px 34px 30px;
+      }
+    }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: #808000;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+    }
+
+    .step-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+    }
+
+    .progress {
+      margin-top: 4px;
+      width: 150px;
+      height: 6px;
+      border-radius: 999px;
+      background: #f1e5d6;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 60%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), var(--primary-soft));
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 4px;
+    }
+
+    .intro {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .section {
+      padding: 14px 0 4px;
+      border-top: 1px solid #f1e4d6;
+    }
+
+    .field-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 18px;
+      margin-top: 10px;
+    }
+
+    .field {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--text-main);
+      background: #fdfaf7;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease,
+        background 0.15s ease;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary-soft);
+      box-shadow: 0 0 0 2px rgba(164, 169, 91, 0.2);
+      background: #ffffff;
+    }
+
+    .choices {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      padding: 7px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: #fcf7ee;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, border-color 0.15s ease,
+        box-shadow 0.15s ease, transform 0.1s ease;
+    }
+
+    .pill input {
+      accent-color: var(--primary);
+    }
+
+    .pill:hover {
+      background: #f8f1e5;
+      border-color: #e1d3c0;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    .range-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    input[type="range"] {
+      flex: 1;
+    }
+
+    .range-value {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      min-width: 80px;
+    }
+
+    .actions {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .cta-submit {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 22px;
+      background: radial-gradient(circle at top left, var(--primary), var(--primary-soft));
+      color: #ffffff;
+      border-radius: 999px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 16px 36px rgba(114, 114, 0, 0.4);
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    }
+
+    .cta-submit::after {
+      content: "→";
+      font-size: 1.1rem;
+      margin-left: 6px;
+      transition: transform 0.15s ease-out;
+    }
+
+    .cta-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 44px rgba(114, 114, 0, 0.48);
+    }
+
+    .cta-submit:hover::after {
+      transform: translateX(2px);
+    }
+
+    .back-link {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .fine-print {
+      margin-top: 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Results + status */
+    #status {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .results {
+      margin-top: 18px;
+    }
+
+    .item-card {
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: #faf7f0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* DARKER, ECO-ISH TOP PICK CARD */
+    .item-card.top-pick-card {
+      background: radial-gradient(circle at top left, #e6f0c4, #f5f0df);
+      border-color: #6a7300;
+      box-shadow: 0 14px 32px rgba(106, 115, 0, 0.35);
+    }
+
+    .item-card.top-pick-card::before {
+      content: "Top pick";
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(106, 115, 0, 0.12);
+      color: #505600;
+    }
+
+    .item-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .item-meta {
+      font-size: 0.8rem;
+      color: #555;
+      margin-bottom: 3px;
+    }
+
+    .item-link a {
+      font-size: 0.8rem;
+      color: #727200;
+      text-decoration: none;
+    }
+
+    /* --- LOADER CSS (SIMPLIFIED) --- */
+    #loaderOverlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      background: radial-gradient(
+        circle at top,
+        rgba(250, 248, 240, 0.96),
+        rgba(230, 239, 219, 0.96)
+      );
+      backdrop-filter: blur(4px);
+    }
+
+    .eco-loader-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .eco-loader {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      box-sizing: border-box; /* Ensures border is inside the 64x64 */
+      
+      /* The "track" - a light, semi-transparent version */
+      border: 6px solid rgba(47, 123, 58, 0.2);
+      
+      /* The spinning arc (90 degrees at the top) */
+      border-top-color: #2f7b3a; 
+      
+      animation: eco-spin 0.9s linear infinite;
+    }
+
+    /*
+      .eco-loader::before {
+        ...REMOVED...
+      }
+    */
+
+    @keyframes eco-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    /* --- END OF LOADER CSS --- */
+
+    .eco-loader-text {
+      font-size: 0.85rem;
+      color: #5a5f1a;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-dress"></div>
+
+  <div id="loaderOverlay">
+    <div class="eco-loader-wrap">
+      <div class="eco-loader"></div>
+      <div class="eco-loader-text">Our assistant is finding pieces you’ll love…</div>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="top-row">
+      <div>
+        <div class="brand">WearWise</div>
+      </div>
+      <div>
+        <div class="step-label">Questionnaire</div>
+        <div class="progress">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <h1>Tell us about your plans</h1>
+    <p class="intro">
+      Answer a few quick questions and we’ll curate rental looks tailored to your event, style, and budget.
+    </p>
+
+    <form id="ww-form">
+      <div class="section">
+        <div class="field-row">
+          <div class="field">
+            <label for="userName">Your name (optional)</label>
+            <input
+              id="userName"
+              name="userName"
+              type="text"
+              placeholder="e.g. Emma"
+            />
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top: 10px;">
+          Event details
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="eventType">What are you dressing for?</label>
+            <select id="eventType" name="eventType" required>
+              <option value="">Select an event</option>
+              <option>Wedding guest</option>
+              <option>Black tie / gala</option>
+              <option>Birthday / celebration</option>
+              <option>Work event</option>
+              <option>Holiday / vacation</option>
+              <option>Casual day / brunch</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="eventDate">When is it?</label>
+            <input id="eventDate" name="eventDate" type="date" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="location">Where will you be wearing it? (city or climate)</label>
+            <input id="location" name="location" type="text" placeholder="e.g. London, warm indoor venue" />
+          </div>
+          <div class="field">
+            <label for="dressCode">Dress code (if you know it)</label>
+            <input id="dressCode" name="dressCode" type="text" placeholder="e.g. cocktail, smart casual" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Your style & fit</div>
+
+        <div class="field">
+          <label>How would you like to feel?</label>
+          <div class="choices">
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="elevated" />
+              Elevated
+            </label>
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="minimal" />
+              Minimal
+            </label>
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="romantic" />
+              Romantic
+            </label>
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="bold" />
+              Bold
+            </label>
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="comfortable" />
+              Comfortable
+            </label>
+            <label class="pill">
+              <input type="checkbox" name="vibe" value="trend-led" />
+              Trend-led
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Colours you love (or want to avoid)</label>
+          <div class="field-row">
+            <div class="field">
+              <input
+                type="text"
+                name="coloursLove"
+                placeholder="Colours you love (e.g. jewel tones, neutrals)"
+              />
+            </div>
+            <div class="field">
+              <input
+                type="text"
+                name="coloursAvoid"
+                placeholder="Colours to avoid (e.g. red, bright orange)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="size">Your usual dress size</label>
+            <input id="size" name="size" type="text" placeholder="e.g. UK 10 / M" />
+          </div>
+          <div class="field">
+            <label for="fitNotes">Anything we should know about fit?</label>
+            <input
+              id="fitNotes"
+              name="fitNotes"
+              type="text"
+              placeholder="e.g. petite, tall, bigger bust, prefer long sleeves"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Budget & extras</div>
+
+        <div class="field">
+          <label for="budget">Rough budget for the outfit (rental)</label>
+          <div class="range-row">
+            <input
+              id="budget"
+              name="budget"
+              type="range"
+              min="30"
+              max="300"
+              step="10"
+              value="80"
+            />
+            <div class="range-value" id="budgetValue">Around £80</div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="duration">How long do you need it for?</label>
+            <select id="duration" name="duration">
+              <option value="">Select an option</option>
+              <option>1 day / evening</option>
+              <option>3–4 days</option>
+              <option>1 week</option>
+              <option>Longer</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="extras">Do you also need accessories?</label>
+            <select id="extras" name="extras">
+              <option value="">Not sure yet</option>
+              <option>Yes – bags & shoes</option>
+              <option>Yes – jewellery</option>
+              <option>Yes – full look (all of the above)</option>
+              <option>No – just the main outfit</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="notes">Anything else you’d like WearWise to know?</label>
+          <textarea
+            id="notes"
+            name="notes"
+            placeholder="Share any specific pieces you love, insecurities you’re dressing around, or inspiration."
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="wearwise.html" class="back-link">← Back to WearWise home</a>
+        <button type="submit" class="cta-submit">
+          See my recommendations
+        </button>
+      </div>
+      <p class="fine-print">
+        This is a prototype — WearWise will generate suggestions based on your answers.
+      </p>
+
+      <div id="status"></div>
+      <section class="results" id="results"></section>
+    </form>
+  </div>
+
+  <script>
+    // Budget label
+    const budgetInput = document.getElementById("budget");
+    const budgetValue = document.getElementById("budgetValue");
+
+    function updateBudgetLabel() {
+      budgetValue.textContent = "Around £" + budgetInput.value;
+    }
+
+    budgetInput.addEventListener("input", updateBudgetLabel);
+    updateBudgetLabel();
+
+    const form = document.getElementById("ww-form");
+    const statusEl = document.getElementById("status");
+    const resultsEl = document.getElementById("results");
+    const loaderOverlay = document.getElementById("loaderOverlay");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      statusEl.textContent = "WearWise is finding rental looks for you...";
+      resultsEl.innerHTML = "";
+      loaderOverlay.style.display = "flex";
+
+      const formData = new FormData(form);
+
+      const userName   = formData.get("userName") || "";
+      const eventType  = formData.get("eventType") || "";
+      const eventDate  = formData.get("eventDate") || "";
+      const location   = formData.get("location") || "";
+      const dressCode  = formData.get("dressCode") || "";
+      const size       = formData.get("size") || "";
+      const fitNotes   = formData.get("fitNotes") || "";
+      const coloursLove  = formData.get("coloursLove") || "";
+      const coloursAvoid = formData.get("coloursAvoid") || "";
+      const duration   = formData.get("duration") || "";
+      const extras     = formData.get("extras") || "";
+      const notes      = formData.get("notes") || "";
+      const vibes      = formData.getAll("vibe") || [];
+      const budgetVal  = formData.get("budget") || "";
+
+      // Build a single natural language description for the backend agent
+      const userDescription = `
+Name: ${userName}
+Event: ${eventType}
+Date: ${eventDate}
+Location: ${location}
+Dress code: ${dressCode}
+Vibes: ${vibes.join(", ")}
+Colours you love: ${coloursLove}
+Colours to avoid: ${coloursAvoid}
+Size: ${size}
+Fit notes: ${fitNotes}
+Budget: around £${budgetVal}
+Duration: ${duration}
+Accessories: ${extras}
+Extra notes: ${notes}
+`.trim();
+
+      // Build a short, personalised summary for UI explanations
+      const userSummary = (() => {
+        const bits = [];
+        if (eventType) bits.push(eventType.toLowerCase());
+        if (location) bits.push(`in ${location}`);
+        if (vibes.length) bits.push(`${vibes.join(", ")} vibes`);
+        if (budgetVal) bits.push(`budget around £${budgetVal}`);
+        return bits.join(" · ");
+      })();
+
+      try {
+        const response = await fetch("/api/recommend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_input: userDescription }),
+        });
+
+        if (!response.ok) {
+          loaderOverlay.style.display = "none";
+          throw new Error("Server error: " + response.status);
+        }
+
+        const data = await response.json();
+
+        // Use explainability fields from backend
+        const items = data.ranked_items || [];
+        const agentChoice = data.llm_choice || null;
+        const agentExplanation = data.llm_explanation || "";
+        const trace = data.trace || [];
+
+        if (items.length === 0) {
+          loaderOverlay.style.display = "none";
+          statusEl.textContent = "No items found yet. Try adjusting your answers.";
+          return;
+        }
+
+        // Decide which index is the single top pick
+        let topPickIndex = -1;
+
+        if (agentChoice && items.length > 0) {
+          topPickIndex = items.findIndex((item) => {
+            if (agentChoice.url && item.url) {
+              return agentChoice.url === item.url;
+            }
+            if (agentChoice.title && item.title) {
+              return agentChoice.title === item.title;
+            }
+            return false;
+          });
+        }
+
+        // Fallback to the first item if we did not find a match
+        if (topPickIndex === -1 && items.length > 0) {
+          topPickIndex = 0;
+        }
+
+        // --- JAVASCRIPT MODIFICATION HERE ---
+        // Build status text with number of matches
+        const numMatches = items.length;
+        const matchText = numMatches === 1 ? "1 rental match" : `${numMatches} rental matches`;
+        const eventText = eventType ? `for your ${eventType.toLowerCase()}` : "";
+        statusEl.textContent = `Found ${matchText} ${eventText}:`;
+        // --- END OF MODIFICATION ---
+        
+        resultsEl.innerHTML = "";
+
+        // Helper: is this item the agent's chosen one?
+        function isAgentPick(index) {
+          return index === topPickIndex;
+        }
+
+        // Helper: build "why not" explanation for one alternative
+        function buildWhyNotReason(best, other, altIndex) {
+          const reasons = [];
+
+          const bestPrice = best.price;
+          const otherPrice = other.price;
+          if (
+            typeof bestPrice === "number" &&
+            typeof otherPrice === "number" &&
+            otherPrice > bestPrice + 5
+          ) {
+            reasons.push(`it is more expensive (£${otherPrice} vs £${bestPrice})`);
+          }
+
+          const bestDel = best.delivery_score ?? 0;
+          const otherDel = other.delivery_score ?? 0;
+          if (otherDel < bestDel) {
+            reasons.push("it arrives later");
+          }
+
+          const bestSim = best.similarity_score ?? 0;
+          const otherSim = other.similarity_score ?? 0;
+          if (otherSim < bestSim) {
+            reasons.push("it matches your brief less closely");
+          }
+
+          if (reasons.length === 0) {
+            return null;
+          }
+
+          const title = other.title || `alternative ${altIndex}`;
+          return `${title} was ranked lower because ${reasons.join(" and ")}.`;
+        }
+
+        items.forEach((item, index) => {
+          const card = document.createElement("div");
+          const baseClass = "item-card";
+          const agentPicked = isAgentPick(index);
+
+          card.className = baseClass;
+          if (agentPicked) {
+            card.classList.add("top-pick-card");
+          }
+
+          const priceText =
+            item.price !== null && item.price !== undefined
+              ? "£" + item.price
+              : "Price unknown";
+
+          const priceScore = item.price_score ?? 0;
+          const deliveryScore = item.delivery_score ?? 0;
+          const similarityScore = item.similarity_score ?? 0;
+          const totalScore = item.total_score ?? 0;
+
+          // Friendly tags instead of raw numbers
+          const tags = [];
+          if (priceScore >= 2) {
+            tags.push("Budget-friendly");
+          } else if (priceScore >= 1) {
+            tags.push("Within budget");
+          }
+          if (deliveryScore >= 2) {
+            tags.push("Arrives quickly");
+          } else if (deliveryScore >= 1) {
+            tags.push("Standard delivery");
+          }
+          if (similarityScore > 0) {
+            tags.push("Matches your brief");
+          }
+
+          const tagsHtml = tags.length
+            ? `<div class="item-meta" style="margin-top:4px;">
+                 ${tags
+                   .map(
+                     (t) =>
+                       `<span style="display:inline-block;margin-right:6px;font-size:0.8rem;border-radius:999px;padding:2px 8px;border:1px solid #ddd;background:#fafafa;">${t}</span>`
+                   )
+                   .join("")}
+               </div>`
+            : "";
+
+          // Overall match scale (0–100%)
+          const maxTotalScore = 6.0; // price (2) + delivery (2) + similarity (2)
+          const matchPercent = Math.max(
+            0,
+            Math.min(100, Math.round((Number(totalScore) / maxTotalScore) * 100))
+          );
+
+          let matchLabel = "Low match";
+          if (matchPercent >= 80) {
+            matchLabel = "Excellent match";
+          } else if (matchPercent >= 60) {
+            matchLabel = "Good match";
+          } else if (matchPercent >= 40) {
+            matchLabel = "Decent match";
+          }
+
+          const matchBarHtml = `
+            <div class="item-meta" style="margin-top:6px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;">
+                <span>Match level: <strong>${matchLabel}</strong></span>
+                <span>${matchPercent}%</span>
+              </div>
+              <div style="margin-top:4px;width:100%;height:6px;border-radius:999px;background:#f1f1f1;">
+                <div style="width:${matchPercent}%;height:100%;border-radius:999px;background:#111;"></div>
+              </div>
+            </div>
+          `;
+
+          const pickLabel = agentPicked
+            ? `<div class="item-meta" style="margin-top:4px;">
+                 <strong>Our top pick for you</strong>
+               </div>`
+            : "";
+
+          const personalisedIntro =
+            agentPicked && userSummary
+              ? `For your ${userSummary}, this looks like the strongest fit. `
+              : agentPicked
+              ? `This looks like the strongest fit overall. `
+              : "";
+
+          const explanationHtml =
+            agentPicked && (agentExplanation || personalisedIntro)
+              ? `<div class="item-meta" style="margin-top:4px;font-size:0.85rem;line-height:1.4;">
+                   <strong>Why we chose this:</strong>
+                   ${personalisedIntro}${agentExplanation || ""}
+                 </div>`
+              : "";
+
+          // "Why not the others?" for the top pick
+          let whyNotHtml = "";
+          if (agentPicked && items.length > 1) {
+            const others = items
+              .map((it, i) => ({ it, i }))
+              .filter(({ i }) => i !== index) // everything except the top pick
+              .slice(0, 2)                     // next 1–2 alternatives
+              .map(({ it }) => it);
+
+            const lines = [];
+            others.forEach((other, idx) => {
+              const line = buildWhyNotReason(item, other, idx + 1);
+              if (line) lines.push(line);
+            });
+
+            if (lines.length > 0) {
+              whyNotHtml = `
+                <div class="item-meta" style="margin-top:4px;font-size:0.8rem;">
+                  <strong>Why not the others?</strong>
+                  <ul style="margin:4px 0 0 16px;">
+                    ${lines.map((l) => `<li>${l}</li>`).join("")}
+                  </ul>
+                </div>
+              `;
+            }
+          }
+
+          // Debug panel for judges
+          const debugHtml = `
+            <details style="margin-top:6px;">
+              <summary style="font-size:0.8rem;cursor:pointer;">See how we scored this (debug)</summary>
+              <div style="font-size:0.75rem;margin-top:4px;">
+                Price score: ${Number(priceScore).toFixed(1)}<br>
+                Delivery score: ${Number(deliveryScore).toFixed(1)}<br>
+                Similarity score: ${Number(similarityScore).toFixed(1)}<br>
+                Total score: ${Number(totalScore).toFixed(1)} (max 6.0)
+              </div>
+            </details>
+          `;
+
+          card.innerHTML = `
+            <div class="item-title">${item.title || "Untitled item"}</div>
+            <div class="item-meta">
+              ${priceText} · ${item.delivery || "Delivery: unknown"}
+            </div>
+            ${pickLabel}
+            ${matchBarHtml}
+            ${tagsHtml}
+            ${explanationHtml}
+            ${whyNotHtml}
+            <div class="item-link" style="margin-top:6px;">
+              ${
+                item.url
+                  ? `<a href="${item.url}" target="_blank">View on rental site</a>`
+                  : ""
+              }
+            </div>
+            ${debugHtml}
+          `;
+
+          resultsEl.appendChild(card);
+        });
+
+        // Optional: show full agent trace for judges
+        if (trace.length > 0) {
+          const traceBlock = document.createElement("details");
+          traceBlock.style.marginTop = "16px";
+          traceBlock.innerHTML = `
+            <summary style="font-size:0.8rem; cursor:pointer;">
+              Show full agent trace (judge view)
+            </summary>
+            <pre style="font-size:0.7rem; white-space:pre-wrap; margin-top:4px;">
+${JSON.stringify(trace, null, 2)}
+            </pre>
+          `;
+          resultsEl.appendChild(traceBlock);
+        }
+
+        loaderOverlay.style.display = "none";
+      } catch (err) {
+        console.error(err);
+        loaderOverlay.style.display = "none";
+        statusEl.textContent = "Something went wrong talking to WearWise's agent.";
+      }
+    });
+  </script>
+</body>
+</html>
