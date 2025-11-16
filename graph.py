@@ -7,7 +7,7 @@ from sites import gmd_1, br_1, hs_1, hurr_1, mwhq_1
 SITE_MODULES = {
     "gmd_1": gmd_1,
     "br_1": br_1,
-    #"hs_1": hs_1,
+    "hs_1": hs_1,
     "hurr_1": hurr_1,
     "mwhq_1": mwhq_1
 }
