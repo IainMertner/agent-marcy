@@ -4,7 +4,6 @@ import json
 
 API_ENDPOINT = "https://api.byrotation.com/trpc/listing.list"
 BASE_DOMAIN = "https://byrotation.com"
-PAGE_SIZE = 20  # items per page
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -32,12 +31,12 @@ def extract_hits(data):
             .get("hits", [])
     )
 
-def get_item_urls(query: str) -> List[Dict]:
+def get_item_urls(query: str, max_per_site: int) -> List[Dict]:
     """Fetch a single page of ByRotation products matching query."""
     input_param = {
         "0": {
             "json": {
-                "first": PAGE_SIZE,
+                "first": max_per_site,
                 "skip": 0,
                 "query": query,
                 "filters": {}

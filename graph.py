@@ -49,6 +49,7 @@ def get_sites_step(state: dict):
 ## find list of item urls from all sites
 def find_item_urls_step(state: dict):
     item_urls = []
+    max_per_site = 3
 
     ## iterate over each site
     for site in state.sites:
@@ -59,7 +60,7 @@ def find_item_urls_step(state: dict):
             continue # no scraper module found
 
         # call site's scraper function with user input
-        urls = module_1.get_item_urls(state.parsed_input)
+        urls = module_1.get_item_urls(state.parsed_input, max_per_site)
 
         for url in urls:
             item_urls.append({"site": site, "url": url})

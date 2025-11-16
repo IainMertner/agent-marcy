@@ -4,11 +4,12 @@ import requests
 from bs4 import BeautifulSoup
 
 ### parse html and extract item urls
-def extract_urls_from_html(html: str, BASE_DOMAIN: str) -> List[Dict]:
+def extract_urls_from_html(html: str, BASE_DOMAIN: str, max_per_site) -> List[Dict]:
     soup = BeautifulSoup(html, "html.parser")
 
     item_urls = []
     seen_urls = set()
+    num_urls = 0
 
     # loop over all <a> tags with href
     for link in soup.find_all("a", href=True):
@@ -23,13 +24,17 @@ def extract_urls_from_html(html: str, BASE_DOMAIN: str) -> List[Dict]:
         if full_url in seen_urls:
             continue
         seen_urls.add(full_url)
-
         item_urls.append(full_url)
+        
+        num_urls += 1
+        if num_urls >= max_per_site:
+            break
 
-    return item_urls[:20]
+
+    return item_urls
 
 ### fetch the search page for the given query and extract item urls
-def get_item_urls(user_input) -> List[Dict]:
+def get_item_urls(user_input, max_per_site) -> List[Dict]:
 
     # target url
     BASE_DOMAIN = "https://hire.girlmeetsdress.com"
@@ -47,4 +52,4 @@ def get_item_urls(user_input) -> List[Dict]:
     # fetch page and parse urls
     resp = requests.get(COLLECTION_URL, headers=HEADERS, timeout=15)
     resp.raise_for_status()
-    return extract_urls_from_html(resp.text, BASE_DOMAIN)
+    return extract_urls_from_html(resp.text, BASE_DOMAIN, max_per_site)

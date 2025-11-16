@@ -57,10 +57,10 @@ query getSearchResults($query: String!, $productFilters: [ProductFilter!], $prod
 }
 """
 
-def fetch_urls(search_term, cursor=None, page_size=20):
+def fetch_urls(search_term, max_per_site, cursor=None):
     variables = {
         "query": search_term,
-        "productLimitFirst": page_size,
+        "productLimitFirst": max_per_site,
         "afterCursor": cursor,
         "productFilters": [
             {"variantMetafield": {
@@ -88,11 +88,11 @@ def fetch_urls(search_term, cursor=None, page_size=20):
     return data["data"]["search"]
 
 
-def get_item_urls(search_term="red"):
+def get_item_urls(search_term, max_per_site):
     item_urls = []
     cursor = None
 
-    result = fetch_urls(search_term, cursor)
+    result = fetch_urls(search_term, max_per_site, cursor)
 
     edges = result["edges"]
 

@@ -10,13 +10,13 @@ HEADERS = {
     "Accept": "*/*",
 }
 
-def fetch_hurr(query="red", page=1, size=20):
+def fetch_hurr(query, max_per_site, page=1, ):
     """Fetch results from HURR's public ElasticSearch API."""
     payload = {
         "queries": [
             {
                 "query": query,
-                "page": {"current": page, "size": size}
+                "page": {"current": page, "size": max_per_site}
             }
         ]
     }
@@ -35,10 +35,10 @@ def correct_hurr_url(slug: str) -> str:
     return f"https://www.hurrcollective.com/listings/{slug}"
 
 
-def get_item_urls(query):
+def get_item_urls(query, max_per_site):
 
     item_urls = []
-    data = fetch_hurr(query, page=1)
+    data = fetch_hurr(query, max_per_site, page=1)
 
     if not data:
         print("No API data returned.")

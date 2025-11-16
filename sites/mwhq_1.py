@@ -35,9 +35,9 @@ def build_product_url(product: dict) -> str:
     product_id = product.get("id")
     return f"{BASE_DOMAIN}/{brand_slug}/{product_slug}/P{product_id}"
 
-def get_item_urls(query: str, total: int = 20) -> List[str]:
+def get_item_urls(query: str, max_per_site: int) -> List[str]:
     urls = []
-    pages_needed = -(-total // PAGE_SIZE)  # ceiling division
+    pages_needed = -(-max_per_site // PAGE_SIZE)  # ceiling division
 
     for page in range(pages_needed):
         products = fetch_products_page(query, page)
@@ -47,16 +47,9 @@ def get_item_urls(query: str, total: int = 20) -> List[str]:
             if product.get("overallStatus", "").upper() == "SOLD":
                 continue
             urls.append(build_product_url(product))
-            if len(urls) >= total:
+            if len(urls) >= max_per_site:
                 break
-        if len(urls) >= total:
+        if len(urls) >= max_per_site:
             break
 
     return urls
-
-# Example usage
-if __name__ == "__main__":
-    urls = get_item_urls("red", total=20)
-    print(f"Found {len(urls)} products:")
-    for u in urls:
-        print(u)
