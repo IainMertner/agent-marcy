@@ -6,8 +6,11 @@ from typing import List, Dict
 from dotenv import load_dotenv
 from pathlib import Path
 
-env_path = Path(__file__).resolve().parent / ".env"
-load_dotenv(dotenv_path=env_path)
+from dotenv import load_dotenv
+
+# Just load from project root / current working dir
+load_dotenv()
+
 
 API_ENDPOINT = os.getenv("API_ENDPOINT")
 API_TOKEN = os.getenv("API_TOKEN")

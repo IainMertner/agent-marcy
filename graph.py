@@ -3,6 +3,10 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional, Union
 from rank_items import rank_items
 from sites import gmd_1, gmd_2, br_1, br_2, hs_1, hs_2, hurr_1, hurr_2, mwhq_1, mwhq_2
+from langchain_core.tracers import ConsoleCallbackHandler
+from langsmith import Client
+import os
+
 
 # initialise scraper modules for each site
 SITE_MODULES = {
@@ -98,3 +102,6 @@ graph_builder.add_edge("rank_items_step", END)
 
 # THIS is the important line:
 graph = graph_builder.compile()
+
+
+client = Client(api_key=os.getenv("LANGSMITH_API_KEY"))

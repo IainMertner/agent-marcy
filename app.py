@@ -8,10 +8,34 @@ from flask import Flask, request, jsonify, send_from_directory
 from graph import graph
 from agent_ranking import agent_rank_with_llm 
 
+# --- LangSmith / LangChain tracing imports ---
+from dotenv import load_dotenv
+from langsmith.run_helpers import traceable
+
+# Load .env so LANGSMITH_API_KEY, LANGCHAIN_TRACING_V2, etc. are available
+load_dotenv()
+
 app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "WearWise")
+
+
+
+@traceable(
+    run_type="chain",
+    name="wearwise_recommendation",
+    tags=["wearwise", "hackathon", "frontend-api"],
+)
+def run_wearwise_graph(user_input: str, raw_payload: Dict[str, Any] | None = None) -> Dict[str, Any]:
+    """
+    Wraps the LangGraph invocation in a LangSmith trace.
+    Every call to /api/recommend will show up as a run in LangSmith.
+    """
+    initial_state: Dict[str, Any] = {"user_input": user_input}
+  
+    final_state = graph.invoke(initial_state)
+    return final_state
 
 
 # ---------- FRONTEND PAGES ----------
@@ -56,15 +80,14 @@ def favicon():
 
 @app.post("/api/recommend")
 def recommend():
-    data = request.get_json(force=True) or {}
-    user_input = data.get("user_input", "")
+    data: Dict[str, Any] = request.get_json(force=True) or {}
+    user_input: str = data.get("user_input", "")
 
     print(">>> Received from frontend:\n", user_input)
-    print(">>> Calling graph.invoke(...)")
+    print(">>> Calling run_wearwise_graph(...) with LangSmith tracing")
 
-    # LangGraph workflow
-    initial_state: Dict[str, Any] = {"user_input": user_input}
-    final_state = graph.invoke(initial_state)
+    # LangGraph workflow wrapped in LangSmith tracing
+    final_state = run_wearwise_graph(user_input=user_input, raw_payload=data)
 
     print(">>> Full final_state:", final_state, type(final_state))
 
@@ -104,4 +127,8 @@ def recommend():
 
 if __name__ == "__main__":
     # Start on http://127.0.0.1:8005/
+    # Make sure you have in your env / .env:
+    #   LANGSMITH_API_KEY=...
+    #   LANGCHAIN_TRACING_V2=true
+    #   LANGCHAIN_PROJECT=wearwise-hackathon   (or similar)
     app.run(host="0.0.0.0", port=8005, debug=True)
