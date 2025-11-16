@@ -51,20 +51,30 @@ def get_sites_step(state: dict):
 
 
 def find_item_urls_step(state: AgentState):
-    item_urls: List[Any] = []
+    item_urls: List[Dict[str, str]] = []
+
     for site in state.sites:
         module_1 = SITE_MODULES.get(site + "_1")
         if module_1 is None:
-            print(f"No model found for site: {site}")
-            continue # no scraper module found
+            print(f"[WARN] No module_1 found for site: {site}")
+            continue  # no scraper module found
 
-        # call site's scraper function with user input
-        urls = module_1.get_item_urls(state.parsed_input)
+        try:
+            # This is where mwhq_1.get_item_urls(...) can timeout
+            urls = module_1.get_item_urls(state.parsed_input)
+        except Exception as e:
+            # Catch *all* scraper failures per site so agent keeps going
+            print(f"[WARN] Failed to fetch item URLs for site={site}: {e}")
+            continue
+
+        if not urls:
+            continue
 
         for url in urls:
             item_urls.append({"site": site, "url": url})
 
     return {"item_urls": item_urls}
+
 
 ## get individual item details from urls (dummy code)
 def get_item_details_step(state: dict):
