@@ -374,6 +374,9 @@
       flex-direction: column;
       align-items: center;
       gap: 10px;
+      padding: 16px;
+      text-align: center;
+      max-width: 420px;
     }
 
     .eco-loader {
@@ -381,33 +384,23 @@
       width: 64px;
       height: 64px;
       border-radius: 50%;
-      box-sizing: border-box; /* Ensures border is inside the 64x64 */
-      
-      /* The "track" - a light, semi-transparent version */
+      box-sizing: border-box;
       border: 6px solid rgba(47, 123, 58, 0.2);
-      
-      /* The spinning arc (90 degrees at the top) */
-      border-top-color: #2f7b3a; 
-      
+      border-top-color: #2f7b3a;
       animation: eco-spin 0.9s linear infinite;
     }
-
-    /*
-      .eco-loader::before {
-        ...REMOVED...
-      }
-    */
 
     @keyframes eco-spin {
       to {
         transform: rotate(360deg);
       }
     }
-    /* --- END OF LOADER CSS --- */
 
     .eco-loader-text {
       font-size: 0.85rem;
       color: #5a5f1a;
+      margin-top: 10px;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -417,7 +410,9 @@
   <div id="loaderOverlay">
     <div class="eco-loader-wrap">
       <div class="eco-loader"></div>
-      <div class="eco-loader-text">Our assistant is finding pieces you’ll love…</div>
+      <div class="eco-loader-text">
+        Great choice! The fashion industry produces 10% of global CO₂ emissions – renting helps cut that impact.
+      </div>
     </div>
   </div>
 
@@ -642,13 +637,59 @@
     const statusEl = document.getElementById("status");
     const resultsEl = document.getElementById("results");
     const loaderOverlay = document.getElementById("loaderOverlay");
+    const ecoLoaderText = document.querySelector(".eco-loader-text");
+
+    // Sustainability facts to show while loading
+    const sustainabilityFacts = [
+      "Great choice! The fashion industry produces 10% of global CO₂ emissions, by renting instead of buying, you’re helping cut that impact.",
+      "Thank you for choosing circular fashion. Every garment rented can extend its life by 2–3×, significantly reducing waste.",
+      "Your rental helps save water. A single cotton dress can take over 2,500 litres of water to produce, reusing it saves those resources.",
+      "Nice move! 92 million tonnes of clothing end up in landfill each year. Renting keeps pieces in circulation, not in the ground.",
+      "You’re reducing microplastic pollution. Synthetic garments release microplastics during production, reusing them avoids creating more.",
+      "Your choice supports a circular economy. Reusing clothing can reduce the need for new production by up to 30%.",
+      "By renting today, you’re lowering demand for fast fashion, the world buys 60% more clothes than 15 years ago, but keeps them for half as long.",
+      "You’re doing the planet a favour, washing, dyeing and finishing textiles use huge amounts of energy and chemicals. Renting means fewer new garments need to go through this process.",
+      "Great pick! Every rental saves an estimated 1–3 kg of CO₂ that would’ve been produced making a new item.",
+      "You’re giving high-quality fashion the long life it deserves. Extending the lifespan of a garment by just 9 months reduces its carbon, water and waste footprint by 20–30%."
+    ];
+
+    let factIndex = 0;
+    let factIntervalId = null;
+
+    function startSustainabilityFacts() {
+      if (!ecoLoaderText) return;
+      factIndex = 0;
+      ecoLoaderText.textContent = sustainabilityFacts[factIndex];
+      if (factIntervalId) clearInterval(factIntervalId);
+      factIntervalId = setInterval(() => {
+        factIndex = (factIndex + 1) % sustainabilityFacts.length;
+        ecoLoaderText.textContent = sustainabilityFacts[factIndex];
+      }, 4500);
+    }
+
+    function stopSustainabilityFacts() {
+      if (factIntervalId) {
+        clearInterval(factIntervalId);
+        factIntervalId = null;
+      }
+    }
+
+    function showLoader() {
+      loaderOverlay.style.display = "flex";
+      startSustainabilityFacts();
+    }
+
+    function hideLoader() {
+      loaderOverlay.style.display = "none";
+      stopSustainabilityFacts();
+    }
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       statusEl.textContent = "WearWise is finding rental looks for you...";
       resultsEl.innerHTML = "";
-      loaderOverlay.style.display = "flex";
+      showLoader();
 
       const formData = new FormData(form);
 
@@ -703,7 +744,7 @@ Extra notes: ${notes}
         });
 
         if (!response.ok) {
-          loaderOverlay.style.display = "none";
+          hideLoader();
           throw new Error("Server error: " + response.status);
         }
 
@@ -716,7 +757,7 @@ Extra notes: ${notes}
         const trace = data.trace || [];
 
         if (items.length === 0) {
-          loaderOverlay.style.display = "none";
+          hideLoader();
           statusEl.textContent = "No items found yet. Try adjusting your answers.";
           return;
         }
@@ -741,14 +782,12 @@ Extra notes: ${notes}
           topPickIndex = 0;
         }
 
-        // --- JAVASCRIPT MODIFICATION HERE ---
         // Build status text with number of matches
         const numMatches = items.length;
         const matchText = numMatches === 1 ? "1 rental match" : `${numMatches} rental matches`;
         const eventText = eventType ? `for your ${eventType.toLowerCase()}` : "";
         statusEl.textContent = `Found ${matchText} ${eventText}:`;
-        // --- END OF MODIFICATION ---
-        
+
         resultsEl.innerHTML = "";
 
         // Helper: is this item the agent's chosen one?
@@ -782,6 +821,21 @@ Extra notes: ${notes}
             reasons.push("it matches your brief less closely");
           }
 
+          // LLM judgement comparison (if present)
+          const bestLLM = typeof best.llm_score === "number" ? best.llm_score : null;
+          const otherLLM = typeof other.llm_score === "number" ? other.llm_score : null;
+          if (
+            bestLLM !== null &&
+            otherLLM !== null &&
+            otherLLM < bestLLM - 5
+          ) {
+            reasons.push(
+              `our smart scoring felt it was a weaker match (${otherLLM.toFixed(
+                0
+              )} vs ${bestLLM.toFixed(0)})`
+            );
+          }
+
           if (reasons.length === 0) {
             return null;
           }
@@ -810,6 +864,11 @@ Extra notes: ${notes}
           const similarityScore = item.similarity_score ?? 0;
           const totalScore = item.total_score ?? 0;
 
+          // LLM scoring (if present from backend)
+          const llmScore =
+            typeof item.llm_score === "number" ? item.llm_score : null;
+          const llmReason = item.llm_reason || "";
+
           // Friendly tags instead of raw numbers
           const tags = [];
           if (priceScore >= 2) {
@@ -837,12 +896,20 @@ Extra notes: ${notes}
                </div>`
             : "";
 
-          // Overall match scale (0–100%)
-          const maxTotalScore = 6.0; // price (2) + delivery (2) + similarity (2)
-          const matchPercent = Math.max(
-            0,
-            Math.min(100, Math.round((Number(totalScore) / maxTotalScore) * 100))
-          );
+          // Overall match scale: prefer LLM score (0–100), otherwise fallback to rule score
+          let matchPercent;
+          if (llmScore !== null) {
+            matchPercent = Math.max(
+              0,
+              Math.min(100, Math.round(llmScore))
+            );
+          } else {
+            const maxTotalScore = 6.0; // price (2) + delivery (2) + similarity (2)
+            matchPercent = Math.max(
+              0,
+              Math.min(100, Math.round((Number(totalScore) / maxTotalScore) * 100))
+            );
+          }
 
           let matchLabel = "Low match";
           if (matchPercent >= 80) {
@@ -886,13 +953,20 @@ Extra notes: ${notes}
                  </div>`
               : "";
 
+          // Per-item LLM reason
+          const llmReasonHtml = llmReason
+            ? `<div class="item-meta" style="margin-top:4px;font-size:0.8rem;line-height:1.4;">
+                 <strong>Smart scoring insight:</strong> ${llmReason}
+               </div>`
+            : "";
+
           // "Why not the others?" for the top pick
           let whyNotHtml = "";
           if (agentPicked && items.length > 1) {
             const others = items
               .map((it, i) => ({ it, i }))
-              .filter(({ i }) => i !== index) // everything except the top pick
-              .slice(0, 2)                     // next 1–2 alternatives
+              .filter(({ i }) => i !== index)
+              .slice(0, 2)
               .map(({ it }) => it);
 
             const lines = [];
@@ -913,15 +987,21 @@ Extra notes: ${notes}
             }
           }
 
-          // Debug panel for judges
+          // Debug panel for judges (rule scores + LLM scores)
           const debugHtml = `
             <details style="margin-top:6px;">
               <summary style="font-size:0.8rem;cursor:pointer;">See how we scored this (debug)</summary>
               <div style="font-size:0.75rem;margin-top:4px;">
+                <strong>Rule engine scores</strong><br>
                 Price score: ${Number(priceScore).toFixed(1)}<br>
                 Delivery score: ${Number(deliveryScore).toFixed(1)}<br>
                 Similarity score: ${Number(similarityScore).toFixed(1)}<br>
-                Total score: ${Number(totalScore).toFixed(1)} (max 6.0)
+                Total score: ${Number(totalScore).toFixed(1)} (max 6.0)<br><br>
+                <strong>Smart score</strong><br>
+                LLM match score: ${
+                  llmScore !== null ? llmScore.toFixed(0) + "/100" : "n/a"
+                }<br>
+                LLM reason: ${llmReason || "n/a"}
               </div>
             </details>
           `;
@@ -935,6 +1015,7 @@ Extra notes: ${notes}
             ${matchBarHtml}
             ${tagsHtml}
             ${explanationHtml}
+            ${llmReasonHtml}
             ${whyNotHtml}
             <div class="item-link" style="margin-top:6px;">
               ${
@@ -964,10 +1045,10 @@ ${JSON.stringify(trace, null, 2)}
           resultsEl.appendChild(traceBlock);
         }
 
-        loaderOverlay.style.display = "none";
+        hideLoader();
       } catch (err) {
         console.error(err);
-        loaderOverlay.style.display = "none";
+        hideLoader();
         statusEl.textContent = "Something went wrong talking to WearWise's agent.";
       }
     });
