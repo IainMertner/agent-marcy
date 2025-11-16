@@ -213,4 +213,5 @@ marimo/_lsp/
 __marimo__/
 
 # Streamlit
-.streamlit/secrets.toml
+.streamlit/secrets.tomlgit add .gitignore
+git commit -m "Add gitignore for env and venv"
