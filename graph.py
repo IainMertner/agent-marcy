@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 from langgraph.graph import StateGraph, START, END
+from parse_input import parse_input
 from rank_items import rank_items
 from sites import gmd_1, gmd_2, br_1, br_2, hs_1, hs_2, hurr_1, hurr_2, mwhq_1, mwhq_2
 
@@ -30,9 +31,10 @@ class AgentState:
 
 ### node functions
 
-## parse user input (dummy code)
+## parse user input (convert into a search term)
 def parse_input_step(state: AgentState):
-    return {"parsed_input": state.user_input}
+    parsed_input = parse_input(state.user_input)
+    return {"parsed_input": parsed_input}
 
 ## get list of sites to search
 def get_sites_step(state: dict):
