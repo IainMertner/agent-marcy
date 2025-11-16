@@ -16,28 +16,31 @@ SITE_MODULES = {
     "br_2": br_2,
     "hs_1": hs_1,
     "hs_2": hs_2,
+    "hs_2": hs_2,
     "hurr_1": hurr_1,
     "hurr_2": hurr_2,
     "mwhq_1": mwhq_1,
     "mwhq_2": mwhq_2,
+    "mwhq_2": mwhq_2,
 }
 
-# define the shared state for the pipeline
 @dataclass
 class AgentState:
     user_input: Optional[str] = None
     parsed_input: Optional[str] = None
     sites: List[str] = field(default_factory=list)
     item_urls: List[Dict[str, str]] = field(default_factory=list)
+    item_urls: List[Dict[str, str]] = field(default_factory=list)
     items: List[Dict[str, Any]] = field(default_factory=list)
     ranked_items: List[Dict[str, Any]] = field(default_factory=list)
 
-### node functions
 
 def parse_input_step(state: AgentState):
     parsed_input = parse_input(state.user_input)
     return {"parsed_input": parsed_input}
 
+
+def get_sites_step(state: AgentState):
 
 def get_sites_step(state: AgentState):
     return {"sites": [
@@ -85,7 +88,17 @@ def get_item_details_step(state: dict):
         if module_2 is None:
             print(f"[WARN] No module_2 found for site: {site}")
             continue
+            print(f"[WARN] No module_2 found for site: {site}")
+            continue
 
+        try:
+            item = module_2.get_details(item_url.get("url"))
+        except Exception as e:
+            print(f"[WARN] Failed to fetch details for site={site} url={item_url.get('url')}: {e}")
+            continue
+
+        if item:
+            items.append(item)
         try:
             item = module_2.get_details(item_url.get("url"))
         except Exception as e:
@@ -99,8 +112,28 @@ def get_item_details_step(state: dict):
 
 
 def rank_items_step(state: AgentState):
+
+def rank_items_step(state: AgentState):
     ranked = rank_items(state.user_input, state.items)
     return {"ranked_items": ranked}
+
+
+# build + compile graph (same as before)
+graph_builder = StateGraph(AgentState)
+graph_builder.add_node("parse_input_step", parse_input_step)
+graph_builder.add_node("get_sites_step", get_sites_step)
+graph_builder.add_node("find_item_urls_step", find_item_urls_step)
+graph_builder.add_node("get_item_details_step", get_item_details_step)
+graph_builder.add_node("rank_items_step", rank_items_step)
+
+graph_builder.add_edge(START, "parse_input_step")
+graph_builder.add_edge("parse_input_step", "get_sites_step")
+graph_builder.add_edge("get_sites_step", "find_item_urls_step")
+graph_builder.add_edge("find_item_urls_step", "get_item_details_step")
+graph_builder.add_edge("get_item_details_step", "rank_items_step")
+graph_builder.add_edge("rank_items_step", END)
+
+graph = graph_builder.compile()
 
 
 # build + compile graph (same as before)
