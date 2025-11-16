@@ -26,7 +26,7 @@ def extract_urls_from_html(html: str, BASE_DOMAIN: str) -> List[Dict]:
 
         item_urls.append(full_url)
 
-    return item_urls
+    return item_urls[:20]
 
 ### fetch the search page for the given query and extract item urls
 def get_item_urls(user_input) -> List[Dict]:

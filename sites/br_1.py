@@ -52,11 +52,9 @@ def get_item_urls(query: str) -> List[Dict]:
     resp.raise_for_status()
     hits = extract_hits(resp.json())
 
-    products = []
+    urls = []
     for hit in hits:
         if hit.get("status") != "ACTIVE":
             continue
-        products.append({
-            "url": f"{BASE_DOMAIN}/products/{hit.get('slug')}"
-        })
-    return products
+        urls.append(f"{BASE_DOMAIN}/products/{hit.get('slug')}")
+    return urls
