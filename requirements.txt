@@ -1,5 +1,4 @@
 langgraph
 openai
-dotenv
-bs4
-flask
+Flask
+llm_client
