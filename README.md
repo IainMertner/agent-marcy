@@ -12,7 +12,7 @@ The agent takes a brief from the user (desired article of clothing, colour, vibe
 
 1. Clone the repository
 ```bash
-git clone https://github.com/IainMertner/agent-marcy
+git clone https://github.com/IainMertner/agent-marcy.git
 cd .\agent-marcy\
 ```
 2. Create and activate a virtual environment
@@ -33,6 +33,8 @@ pip install -r requirements.txt
 ```bash
 python app.py
 ```
-2. Fill out your requirements on the questionnaire
+2. Go to http://127.0.0.1:8005/questionaire.html
 
-3. Enjoy your fashion rental recommendations
+3. Fill out your requirements on the questionnaire
+
+4. Enjoy your fashion rental recommendations
