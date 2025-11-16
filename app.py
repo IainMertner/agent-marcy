@@ -1,9 +1,12 @@
+#app.py
+
 from typing import Any, Dict, List
 import os
 
 from flask import Flask, request, jsonify, send_from_directory
 
-from graph import graph  
+from graph import graph
+from agent_ranking import agent_rank_with_llm 
 
 app = Flask(__name__)
 
@@ -34,19 +37,48 @@ def recommend():
     print(">>> Received from frontend:\n", user_input)
     print(">>> Calling graph.invoke(...)")
 
-    
+    # LangGraph workflow
     initial_state: Dict[str, Any] = {"user_input": user_input}
     final_state = graph.invoke(initial_state)
 
-    
     print(">>> Full final_state:", final_state, type(final_state))
 
- 
-    ranked_items: List[Dict[str, Any]] = final_state.get("ranked_items") or []
+    #Take items from graph output
+    items: List[Dict[str, Any]] = (
+        final_state.get("ranked_items")
+        or final_state.get("items")
+        or []
+    )
+
+    if not items:
+        return jsonify({
+            "ranked_items": [],
+            "llm_choice": None,
+            "llm_explanation": "No items found.",
+            "trace": [],
+        })
+
+    # Run explainable ranking agent
+    agent_result = agent_rank_with_llm(user_input, items)
+
+    ranked_items = agent_result["ranked_items"]
+    llm_choice = agent_result["llm_choice"]
+    llm_explanation = agent_result["llm_explanation"]
+    trace = agent_result["trace"]
+
     top_k = 10
 
-    return jsonify({"ranked_items": ranked_items[:top_k]})
+    # Return everything to the frontend
+    return jsonify({
+        "ranked_items": ranked_items[:top_k],
+        "llm_choice": llm_choice,
+        "llm_explanation": llm_explanation,
+        "trace": trace,
+    })
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    app.run(host="0.0.0.0", port=8005, debug=True)
+
+
+# Website url: http://127.0.0.1:8005/questionaire.html

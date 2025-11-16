@@ -22,6 +22,7 @@
       --border-subtle: #e3ddd4;
       --radius-card: 24px;
     }
+
     /* Background dress illustration */
     .bg-dress {
       position: fixed;
@@ -58,6 +59,8 @@
       border: 1px solid #efe3d3;
       box-shadow: 0 22px 60px rgba(0, 0, 0, 0.1);
       padding: 26px 22px 24px;
+      position: relative;
+      z-index: 1;
     }
 
     @media (min-width: 768px) {
@@ -308,6 +311,29 @@
       padding: 10px 12px;
       margin-bottom: 8px;
       background: #faf7f0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* DARKER, ECO-ISH TOP PICK CARD */
+    .item-card.top-pick-card {
+      background: radial-gradient(circle at top left, #e6f0c4, #f5f0df);
+      border-color: #6a7300;
+      box-shadow: 0 14px 32px rgba(106, 115, 0, 0.35);
+    }
+
+    .item-card.top-pick-card::before {
+      content: "Top pick";
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(106, 115, 0, 0.12);
+      color: #505600;
     }
 
     .item-title {
@@ -326,10 +352,75 @@
       color: #727200;
       text-decoration: none;
     }
+
+    /* --- LOADER CSS (SIMPLIFIED) --- */
+    #loaderOverlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      background: radial-gradient(
+        circle at top,
+        rgba(250, 248, 240, 0.96),
+        rgba(230, 239, 219, 0.96)
+      );
+      backdrop-filter: blur(4px);
+    }
+
+    .eco-loader-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .eco-loader {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      box-sizing: border-box; /* Ensures border is inside the 64x64 */
+      
+      /* The "track" - a light, semi-transparent version */
+      border: 6px solid rgba(47, 123, 58, 0.2);
+      
+      /* The spinning arc (90 degrees at the top) */
+      border-top-color: #2f7b3a; 
+      
+      animation: eco-spin 0.9s linear infinite;
+    }
+
+    /*
+      .eco-loader::before {
+        ...REMOVED...
+      }
+    */
+
+    @keyframes eco-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    /* --- END OF LOADER CSS --- */
+
+    .eco-loader-text {
+      font-size: 0.85rem;
+      color: #5a5f1a;
+    }
   </style>
 </head>
 <body>
   <div class="bg-dress"></div>
+
+  <div id="loaderOverlay">
+    <div class="eco-loader-wrap">
+      <div class="eco-loader"></div>
+      <div class="eco-loader-text">Our assistant is finding pieces you’ll love…</div>
+    </div>
+  </div>
+
   <div class="shell">
     <div class="top-row">
       <div>
@@ -349,9 +440,23 @@
     </p>
 
     <form id="ww-form">
-      <!-- Section 1 -->
       <div class="section">
-        <div class="section-title">Event details</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="userName">Your name (optional)</label>
+            <input
+              id="userName"
+              name="userName"
+              type="text"
+              placeholder="e.g. Emma"
+            />
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top: 10px;">
+          Event details
+        </div>
+
         <div class="field-row">
           <div class="field">
             <label for="eventType">What are you dressing for?</label>
@@ -384,7 +489,6 @@
         </div>
       </div>
 
-      <!-- Section 2 -->
       <div class="section">
         <div class="section-title">Your style & fit</div>
 
@@ -455,7 +559,6 @@
         </div>
       </div>
 
-      <!-- Section 3 -->
       <div class="section">
         <div class="section-title">Budget & extras</div>
 
@@ -538,31 +641,35 @@
     const form = document.getElementById("ww-form");
     const statusEl = document.getElementById("status");
     const resultsEl = document.getElementById("results");
+    const loaderOverlay = document.getElementById("loaderOverlay");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       statusEl.textContent = "WearWise is finding rental looks for you...";
       resultsEl.innerHTML = "";
+      loaderOverlay.style.display = "flex";
 
       const formData = new FormData(form);
 
-      const eventType = formData.get("eventType") || "";
-      const eventDate = formData.get("eventDate") || "";
-      const location = formData.get("location") || "";
-      const dressCode = formData.get("dressCode") || "";
-      const size = formData.get("size") || "";
-      const fitNotes = formData.get("fitNotes") || "";
-      const coloursLove = formData.get("coloursLove") || "";
+      const userName   = formData.get("userName") || "";
+      const eventType  = formData.get("eventType") || "";
+      const eventDate  = formData.get("eventDate") || "";
+      const location   = formData.get("location") || "";
+      const dressCode  = formData.get("dressCode") || "";
+      const size       = formData.get("size") || "";
+      const fitNotes   = formData.get("fitNotes") || "";
+      const coloursLove  = formData.get("coloursLove") || "";
       const coloursAvoid = formData.get("coloursAvoid") || "";
-      const duration = formData.get("duration") || "";
-      const extras = formData.get("extras") || "";
-      const notes = formData.get("notes") || "";
-      const vibes = formData.getAll("vibe") || [];
-      const budgetVal = formData.get("budget") || "";
+      const duration   = formData.get("duration") || "";
+      const extras     = formData.get("extras") || "";
+      const notes      = formData.get("notes") || "";
+      const vibes      = formData.getAll("vibe") || [];
+      const budgetVal  = formData.get("budget") || "";
 
       // Build a single natural language description for the backend agent
       const userDescription = `
+Name: ${userName}
 Event: ${eventType}
 Date: ${eventDate}
 Location: ${location}
@@ -578,6 +685,16 @@ Accessories: ${extras}
 Extra notes: ${notes}
 `.trim();
 
+      // Build a short, personalised summary for UI explanations
+      const userSummary = (() => {
+        const bits = [];
+        if (eventType) bits.push(eventType.toLowerCase());
+        if (location) bits.push(`in ${location}`);
+        if (vibes.length) bits.push(`${vibes.join(", ")} vibes`);
+        if (budgetVal) bits.push(`budget around £${budgetVal}`);
+        return bits.join(" · ");
+      })();
+
       try {
         const response = await fetch("/api/recommend", {
           method: "POST",
@@ -586,43 +703,271 @@ Extra notes: ${notes}
         });
 
         if (!response.ok) {
+          loaderOverlay.style.display = "none";
           throw new Error("Server error: " + response.status);
         }
 
         const data = await response.json();
+
+        // Use explainability fields from backend
         const items = data.ranked_items || [];
+        const agentChoice = data.llm_choice || null;
+        const agentExplanation = data.llm_explanation || "";
+        const trace = data.trace || [];
 
         if (items.length === 0) {
+          loaderOverlay.style.display = "none";
           statusEl.textContent = "No items found yet. Try adjusting your answers.";
           return;
         }
 
-        statusEl.textContent = `Found ${items.length} items. Showing top matches:`;
+        // Decide which index is the single top pick
+        let topPickIndex = -1;
+
+        if (agentChoice && items.length > 0) {
+          topPickIndex = items.findIndex((item) => {
+            if (agentChoice.url && item.url) {
+              return agentChoice.url === item.url;
+            }
+            if (agentChoice.title && item.title) {
+              return agentChoice.title === item.title;
+            }
+            return false;
+          });
+        }
+
+        // Fallback to the first item if we did not find a match
+        if (topPickIndex === -1 && items.length > 0) {
+          topPickIndex = 0;
+        }
+
+        // --- JAVASCRIPT MODIFICATION HERE ---
+        // Build status text with number of matches
+        const numMatches = items.length;
+        const matchText = numMatches === 1 ? "1 rental match" : `${numMatches} rental matches`;
+        const eventText = eventType ? `for your ${eventType.toLowerCase()}` : "";
+        statusEl.textContent = `Found ${matchText} ${eventText}:`;
+        // --- END OF MODIFICATION ---
+        
         resultsEl.innerHTML = "";
 
-        items.forEach((item) => {
+        // Helper: is this item the agent's chosen one?
+        function isAgentPick(index) {
+          return index === topPickIndex;
+        }
+
+        // Helper: build "why not" explanation for one alternative
+        function buildWhyNotReason(best, other, altIndex) {
+          const reasons = [];
+
+          const bestPrice = best.price;
+          const otherPrice = other.price;
+          if (
+            typeof bestPrice === "number" &&
+            typeof otherPrice === "number" &&
+            otherPrice > bestPrice + 5
+          ) {
+            reasons.push(`it is more expensive (£${otherPrice} vs £${bestPrice})`);
+          }
+
+          const bestDel = best.delivery_score ?? 0;
+          const otherDel = other.delivery_score ?? 0;
+          if (otherDel < bestDel) {
+            reasons.push("it arrives later");
+          }
+
+          const bestSim = best.similarity_score ?? 0;
+          const otherSim = other.similarity_score ?? 0;
+          if (otherSim < bestSim) {
+            reasons.push("it matches your brief less closely");
+          }
+
+          if (reasons.length === 0) {
+            return null;
+          }
+
+          const title = other.title || `alternative ${altIndex}`;
+          return `${title} was ranked lower because ${reasons.join(" and ")}.`;
+        }
+
+        items.forEach((item, index) => {
           const card = document.createElement("div");
-          card.className = "item-card";
+          const baseClass = "item-card";
+          const agentPicked = isAgentPick(index);
+
+          card.className = baseClass;
+          if (agentPicked) {
+            card.classList.add("top-pick-card");
+          }
 
           const priceText =
             item.price !== null && item.price !== undefined
               ? "£" + item.price
               : "Price unknown";
 
+          const priceScore = item.price_score ?? 0;
+          const deliveryScore = item.delivery_score ?? 0;
+          const similarityScore = item.similarity_score ?? 0;
+          const totalScore = item.total_score ?? 0;
+
+          // Friendly tags instead of raw numbers
+          const tags = [];
+          if (priceScore >= 2) {
+            tags.push("Budget-friendly");
+          } else if (priceScore >= 1) {
+            tags.push("Within budget");
+          }
+          if (deliveryScore >= 2) {
+            tags.push("Arrives quickly");
+          } else if (deliveryScore >= 1) {
+            tags.push("Standard delivery");
+          }
+          if (similarityScore > 0) {
+            tags.push("Matches your brief");
+          }
+
+          const tagsHtml = tags.length
+            ? `<div class="item-meta" style="margin-top:4px;">
+                 ${tags
+                   .map(
+                     (t) =>
+                       `<span style="display:inline-block;margin-right:6px;font-size:0.8rem;border-radius:999px;padding:2px 8px;border:1px solid #ddd;background:#fafafa;">${t}</span>`
+                   )
+                   .join("")}
+               </div>`
+            : "";
+
+          // Overall match scale (0–100%)
+          const maxTotalScore = 6.0; // price (2) + delivery (2) + similarity (2)
+          const matchPercent = Math.max(
+            0,
+            Math.min(100, Math.round((Number(totalScore) / maxTotalScore) * 100))
+          );
+
+          let matchLabel = "Low match";
+          if (matchPercent >= 80) {
+            matchLabel = "Excellent match";
+          } else if (matchPercent >= 60) {
+            matchLabel = "Good match";
+          } else if (matchPercent >= 40) {
+            matchLabel = "Decent match";
+          }
+
+          const matchBarHtml = `
+            <div class="item-meta" style="margin-top:6px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;">
+                <span>Match level: <strong>${matchLabel}</strong></span>
+                <span>${matchPercent}%</span>
+              </div>
+              <div style="margin-top:4px;width:100%;height:6px;border-radius:999px;background:#f1f1f1;">
+                <div style="width:${matchPercent}%;height:100%;border-radius:999px;background:#111;"></div>
+              </div>
+            </div>
+          `;
+
+          const pickLabel = agentPicked
+            ? `<div class="item-meta" style="margin-top:4px;">
+                 <strong>Our top pick for you</strong>
+               </div>`
+            : "";
+
+          const personalisedIntro =
+            agentPicked && userSummary
+              ? `For your ${userSummary}, this looks like the strongest fit. `
+              : agentPicked
+              ? `This looks like the strongest fit overall. `
+              : "";
+
+          const explanationHtml =
+            agentPicked && (agentExplanation || personalisedIntro)
+              ? `<div class="item-meta" style="margin-top:4px;font-size:0.85rem;line-height:1.4;">
+                   <strong>Why we chose this:</strong>
+                   ${personalisedIntro}${agentExplanation || ""}
+                 </div>`
+              : "";
+
+          // "Why not the others?" for the top pick
+          let whyNotHtml = "";
+          if (agentPicked && items.length > 1) {
+            const others = items
+              .map((it, i) => ({ it, i }))
+              .filter(({ i }) => i !== index) // everything except the top pick
+              .slice(0, 2)                     // next 1–2 alternatives
+              .map(({ it }) => it);
+
+            const lines = [];
+            others.forEach((other, idx) => {
+              const line = buildWhyNotReason(item, other, idx + 1);
+              if (line) lines.push(line);
+            });
+
+            if (lines.length > 0) {
+              whyNotHtml = `
+                <div class="item-meta" style="margin-top:4px;font-size:0.8rem;">
+                  <strong>Why not the others?</strong>
+                  <ul style="margin:4px 0 0 16px;">
+                    ${lines.map((l) => `<li>${l}</li>`).join("")}
+                  </ul>
+                </div>
+              `;
+            }
+          }
+
+          // Debug panel for judges
+          const debugHtml = `
+            <details style="margin-top:6px;">
+              <summary style="font-size:0.8rem;cursor:pointer;">See how we scored this (debug)</summary>
+              <div style="font-size:0.75rem;margin-top:4px;">
+                Price score: ${Number(priceScore).toFixed(1)}<br>
+                Delivery score: ${Number(deliveryScore).toFixed(1)}<br>
+                Similarity score: ${Number(similarityScore).toFixed(1)}<br>
+                Total score: ${Number(totalScore).toFixed(1)} (max 6.0)
+              </div>
+            </details>
+          `;
+
           card.innerHTML = `
             <div class="item-title">${item.title || "Untitled item"}</div>
             <div class="item-meta">
               ${priceText} · ${item.delivery || "Delivery: unknown"}
             </div>
-            <div class="item-link">
-              ${item.url ? `<a href="${item.url}" target="_blank">View on rental site</a>` : ""}
+            ${pickLabel}
+            ${matchBarHtml}
+            ${tagsHtml}
+            ${explanationHtml}
+            ${whyNotHtml}
+            <div class="item-link" style="margin-top:6px;">
+              ${
+                item.url
+                  ? `<a href="${item.url}" target="_blank">View on rental site</a>`
+                  : ""
+              }
             </div>
+            ${debugHtml}
           `;
 
           resultsEl.appendChild(card);
         });
+
+        // Optional: show full agent trace for judges
+        if (trace.length > 0) {
+          const traceBlock = document.createElement("details");
+          traceBlock.style.marginTop = "16px";
+          traceBlock.innerHTML = `
+            <summary style="font-size:0.8rem; cursor:pointer;">
+              Show full agent trace (judge view)
+            </summary>
+            <pre style="font-size:0.7rem; white-space:pre-wrap; margin-top:4px;">
+${JSON.stringify(trace, null, 2)}
+            </pre>
+          `;
+          resultsEl.appendChild(traceBlock);
+        }
+
+        loaderOverlay.style.display = "none";
       } catch (err) {
         console.error(err);
+        loaderOverlay.style.display = "none";
         statusEl.textContent = "Something went wrong talking to WearWise's agent.";
       }
     });
